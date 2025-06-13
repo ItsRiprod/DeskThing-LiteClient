@@ -1,0 +1,92 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+button {
+  background: transparent;
+  background-color: transparent;
+}
+button:focus {
+  outline: none;
+}
+button:active {
+  outline: none;
+}
+
+
+@font-face {
+  font-family: 'Geist';
+  src: url(/fonts/GeistVF.ttf) format('truetype');
+  font-style: normal;
+  font-weight: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'GeistMono';
+  src: url(/fonts/GeistMonoVF.ttf) format('truetype');
+  font-style: normal;
+  font-weight: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'WingDing';
+  src: url(/fonts/wingding.ttf) format('truetype');
+  font-style: normal;
+  font-weight: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'THEBOLDFONT';
+  src: url(/fonts/THEBOLDFONT.ttf) format('truetype');
+  font-style: normal;
+  font-weight: normal;
+  font-display: swap;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #ffffff00;
+  border-radius: 5px;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: rgb(51, 65, 85);
+  border-radius: 5px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+@keyframes scrollText {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(calc(-1 * var(--text-width)));
+  }
+}
+
+.animate-scroll-text {
+  animation: scrollText;
+}
+
+#root {
+  position: fixed;
+  color: white;
+  font-family: 'Geist', sans-serif;
+  max-height: var(--vh);
+}
+
+.bg-gradient-radial {
+  background: radial-gradient(circle, var(--tw-gradient-from) 0%, var(--tw-gradient-to) 100%);
+}

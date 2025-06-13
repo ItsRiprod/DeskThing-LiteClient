@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="preload" as="image" href="/images/appstart.png" />
+    <link rel="icon" type="image/svg+xml" href="/deskthing.svg" />
+    
+    <link rel="manifest" href="/pwa-manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" sizes="192x192" href="/icon-192x192.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="/icon-512x512.png">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>DeskThing Client</title>
+    <script>Object.defineProperty(window, "_vite_is_modern_browser", { value: false, writable: false })</script>
+  </head>
+  <body style="background: black;">
+    <div id="root">
+      <div style="width: 100%; height: 100%; max-height: 98vh; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+        <img id="appstart-img" style="width: 100%; height: 100%; object-fit: cover; object-position: center;" src="/images/appstart.png" alt="App Start Image" />
+      </div>
+    </div> 
+    <script src="/manifest-loader.js"></script>
+    <!-- Only loads this .js file if it is connected via ADB or Bluetooth -->
+    <script src="/manifest.js"></script>
+    <!-- Then load the main script -->
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

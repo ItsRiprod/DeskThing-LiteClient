@@ -1,0 +1,21 @@
+{
+  "name": "Deskthing Client",
+  "id": "deskthing",
+  "short_name": "DT",
+  "description": "The base DeskthingUI for the DeskThing",
+  "reactive": true,
+  "repository": "https://github.com/ItsRiprod/Deskthing-Client/",
+  "author": "Riprod",
+  "version": "0.11.2",
+  "compatibility": {
+    "server": ">=0.11.7",
+    "app": ">=0.11.0"
+  },
+  "context": {
+    "method": 1,
+    "id": 4,
+    "name": "CarThing",
+    "ip": "localhost",
+    "port": 8891
+  }
+}
