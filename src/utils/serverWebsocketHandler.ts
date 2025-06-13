@@ -15,7 +15,7 @@
 import { useAppStore, useClientStore, useMappingStore, useSettingsStore, useWebSocketStore } from '@src/stores'
 import { useTimeStore } from '@src/stores/timeStore'
 import Logger from './Logger'
-import { DEVICE_CLIENT, DESKTHING_DEVICE, DeskThingToDeviceCore, DEVICE_DESKTHING, DeviceToDeskthingData, DeskThingToDeviceData } from '@deskthing/types'
+import { DESKTHING_DEVICE, DeskThingToDeviceCore, DEVICE_DESKTHING, DeviceToDeskthingData } from '@deskthing/types'
 
 
 type DeskThingToDevice<T extends DESKTHING_DEVICE> = Extract<DeskThingToDeviceCore, { type: T }>

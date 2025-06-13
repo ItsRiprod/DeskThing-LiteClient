@@ -215,6 +215,7 @@ export class WebSocketManager {
 
   addListener(listener: SocketEventListener) {
     this.listeners.push(listener)
+    return () => this.removeListener(listener)
   }
 
   removeListener(listener: SocketEventListener) {

@@ -15,10 +15,9 @@ export const WebSocketListener = () => {
   const setSong = useMusicStore((store) => store.setSong)
   const getSong = useMusicStore((store) => store.requestMusicData)
   const [prevTrackName, setPrevTrackName] = useState('')
+  const addListener = useWebSocketStore((state) => state.addListener)
 
   useEffect(() => {
-    const websocketManager = useWebSocketStore.getState()
-
     const handleSongData = (songData: SongData) => {
       if (songData.track_name != undefined && songData.track_name !== prevTrackName) {
         setPrevTrackName(songData.track_name)
@@ -36,8 +35,8 @@ export const WebSocketListener = () => {
       handleServerSocket(socketData)
     }
 
-    websocketManager.addListener(messageHandler)
-    return () => websocketManager.removeListener(messageHandler)
+    const removeListener = addListener(messageHandler)
+    return () => removeListener()
   }, [setSong, prevTrackName, getSong])
 
   return null
