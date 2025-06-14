@@ -3,8 +3,8 @@ import NavRouter from './components/nav/Router'
 import Overlays from './overlay'
 import { ButtonListener } from './components/ButtonListener'
 import ErrorBoundary from '@src/pages/error/ErrorBoundary'
-import { SwipeListener } from './components/SwipeListener'
 import { useEffect } from 'react'
+import { TimeUpdater } from './components/TimeUpdater'
 
 function App() {
   useEffect(() => {
@@ -22,7 +22,7 @@ function App() {
     <HashRouter>
       <ErrorBoundary>
         <ButtonListener />
-        <SwipeListener />
+        <TimeUpdater />
         <Overlays>
           <NavRouter />
         </Overlays>

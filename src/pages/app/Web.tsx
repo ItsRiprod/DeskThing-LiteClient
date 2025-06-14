@@ -1,4 +1,3 @@
-import { TimeUpdater } from '@src/components/TimeUpdater'
 import {
   useAppStore,
   useMappingStore,
@@ -16,6 +15,8 @@ import {
 } from '@deskthing/types'
 import { useRef, useEffect } from 'react'
 import Logger from '@src/utils/Logger'
+import { Hint } from '@src/components/Hint'
+import { useUIStore } from '@src/stores/uiStore'
 
 interface WebPageProps {
   currentView: string
@@ -47,6 +48,8 @@ const WebPage: React.FC<WebPageProps> = ({ currentView }: WebPageProps): JSX.Ele
   const executeKey = useMappingStore((state) => state.executeKey)
   const currentTime = useTimeStore((state) => state.currentTimeFormatted)
   const manifest = useSettingsStore((state) => state.manifest)
+
+  const setPage = useUIStore((state) => state.setPage)
 
   // Handles any music requests from the iframe to the main app
   const handleMusic = () => {
@@ -195,7 +198,12 @@ const WebPage: React.FC<WebPageProps> = ({ currentView }: WebPageProps): JSX.Ele
         } else if (appDataRequest.type === 'action') {
           executeAction({ source: currentView, ...appDataRequest.payload })
         } else if (appDataRequest.type === 'log') {
-          Logger.log(appDataRequest.request, currentView, appDataRequest.payload.message, ...appDataRequest.payload.data)
+          Logger.log(
+            appDataRequest.request,
+            currentView,
+            appDataRequest.payload.message,
+            ...appDataRequest.payload.data
+          )
         }
       } else {
         sendSocket({
@@ -213,9 +221,22 @@ const WebPage: React.FC<WebPageProps> = ({ currentView }: WebPageProps): JSX.Ele
     }
   }, [ip, port, sendSocket, appSettings, currentView])
 
+  const handleGoBack = () => {
+      setPage('dashboard')
+  }
+
   return (
     <>
-      <TimeUpdater />
+      <Hint
+        flag="firstTimeOpeningApp"
+        message="Click the 5th top button (the small one) or the M key (on other devices) to go back to
+        the Dashboard"
+      />
+      <Hint
+        flag="mini-controls"
+        message="Or tap the bottom right to go back"
+        position="bottom-right"
+      />
       <iframe
         ref={iframeRef}
         key={currentView}
@@ -225,6 +246,7 @@ const WebPage: React.FC<WebPageProps> = ({ currentView }: WebPageProps): JSX.Ele
         height="100%"
         width="100%"
       />
+      <button onClick={handleGoBack} className="absolute transition-opacity opacity-0 hover:opacity-100 bottom-0 right-0 bg-neutral-800 border-neutral-500 w-16 h-8 border-t-2 border-l-2 rounded-tl-lg" />
     </>
   )
 }

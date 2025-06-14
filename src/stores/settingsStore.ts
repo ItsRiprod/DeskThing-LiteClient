@@ -3,23 +3,21 @@ import { persist } from 'zustand/middleware'
 import {
   App,
   ClientConfigurations,
-  ClientConnectionMethod,
   ClientManifest,
-  ClientPlatformIDs,
   DEVICE_DESKTHING,
   Log,
-  Theme,
-  ViewMode,
-  VolMode
 } from '@deskthing/types'
 import useWebSocketStore from './websocketStore'
 export interface SettingsState {
   logs: Log[]
   manifest: ClientManifest | undefined
   preferences: ClientConfigurations | undefined
+  flags: Record<string, boolean>
   updateManifest: (settings: Partial<ClientManifest>) => void
   updatePreferences: (preferences: Partial<ClientConfigurations>) => void
   updateCurrentView: (view: App) => void
+  checkFlag: (key: string) => boolean
+  setFlag: (key: string, value: boolean) => void
 }
 
 /**
@@ -33,6 +31,7 @@ export const useSettingsStore = create<SettingsState>()(
       logs: [],
       manifest: undefined,
       preferences: undefined,
+      flags: {},
       updateManifest: (newSettings) =>
         set((state) => ({
           manifest: { ...state.manifest, ...newSettings }
@@ -77,21 +76,47 @@ export const useSettingsStore = create<SettingsState>()(
           preferences: { ...state.preferences, currentView: newView }
         }))
       },
+      checkFlag: (key) => {
+        return get().flags[key] || false
+      },
+      setFlag: (key, value) => {
+        set((state) => ({
+          flags: { ...state.flags, [key]: value }
+        }))
+      }
     }),
     {
       name: 'thinclient-settings-storage',
       partialize: (state) => ({
         manifest: state.manifest,
-        preferences: state.preferences
+        preferences: state.preferences,
+        flags: state.flags
       }),
       onRehydrateStorage: () => (state) => {
-        // wait till the next tick
-        setTimeout(() => {
-          if (window.manifest) {
-            console.log('manifest loaded', window.manifest)
-            state?.updateManifest(window.manifest)
+
+        let manifestLoaded = false;
+
+        // Primary approach: Listen for the manifestLoaded event
+        const handleManifestLoaded = () => {
+          if (!manifestLoaded && window.manifest && state) {
+            manifestLoaded = true;
+            console.log('Manifest loaded via event', window.manifest);
+            state.updateManifest(window.manifest);
+            document.removeEventListener('manifestLoaded', handleManifestLoaded);
           }
-        }, 0)
+        };
+
+        document.addEventListener('manifestLoaded', handleManifestLoaded);
+
+        // Fallback approach: Timeout in case event was already fired or missed
+        setTimeout(() => {
+          if (!manifestLoaded && window.manifest && state) {
+            manifestLoaded = true;
+            console.log('Manifest loaded via timeout fallback', window.manifest);
+            state.updateManifest(window.manifest);
+            document.removeEventListener('manifestLoaded', handleManifestLoaded);
+          }
+        }, 500); // Increased timeout as fallback
       }
     }
   )

@@ -1,4 +1,4 @@
-import { TimeUpdater } from '@src/components/TimeUpdater'
+
 import { useMusicStore, useSettingsStore } from '@src/stores'
 import { useTimeStore } from '@src/stores/timeStore'
 import { FC, useEffect, useState, useRef } from 'react'
@@ -42,7 +42,6 @@ const ClockPage: FC = () => {
 
   return (
     <div ref={mainRef} className="relative w-full flex items-center justify-center h-full">
-      <TimeUpdater />
       {musicData && (
         <div
           className="absolute inset-0 z-0"

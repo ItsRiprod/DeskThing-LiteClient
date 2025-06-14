@@ -12,15 +12,15 @@ async function fetchManifest(url) {
   }
 }
 
-(function loadManifest() {
+function loadManifest() {
   // First set default values
   window.manifest = window.manifest || {};
-  
+
   // Try to fetch dynamic manifest from server
   fetchManifest('/manifest.json')
     .then(dynamicManifest => {
       // Merge with any existing values
-      console.log(dynamicManifest)
+      console.log('Dynamic Manifest: ', dynamicManifest)
       window.manifest = { ...window.manifest, ...dynamicManifest };
       document.dispatchEvent(new Event('manifestLoaded'));
     })
@@ -36,4 +36,6 @@ async function fetchManifest(url) {
           console.log('Failed to load any manifest', error);
         });
     });
-})();
+}
+
+loadManifest()

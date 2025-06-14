@@ -27,6 +27,7 @@ export interface WebSocketState {
   reconnect: () => void
   send: (message: DeviceToDeskthingData) => Promise<void>
   addListener: (listener: (msg: DeskThingToDeviceCore & { app?: string }) => void) => () => void
+  once: (listenData: Partial<DeskThingToDeviceCore>, listener: (msg: DeskThingToDeviceCore & { app?: string }) => void | Promise<void>) => () => void
   removeListener: (listener: (msg: DeskThingToDeviceCore & { app?: string }) => void) => void
 }
 
@@ -149,6 +150,25 @@ export const useWebSocketStore = create<WebSocketState>((set, get) => {
         manager.addListener(listener)
       }
       return () => manager.removeListener(listener)
+    },
+
+    once: (listenData: Partial<DeskThingToDeviceCore>, listener: (msg: DeskThingToDeviceCore & { app?: string }) => void | Promise<void>): (() => void) => {
+      const manager = get().socketManager
+
+      const wrappedListener = (msg: DeskThingToDeviceCore & { app?: string }) => {
+        if ((!listenData.type || msg.type === listenData.type) &&
+            (!listenData.request || msg.request === listenData.request) &&
+            (!listenData.app || msg.app === listenData.app)) {
+          listener(msg)
+          manager.removeListener(wrappedListener)
+        }
+      }
+
+      if (manager) {
+        manager.addListener(wrappedListener)
+      }
+
+      return () => manager.removeListener(wrappedListener)
     },
 
     removeListener: (listener: (msg: DeskThingToDeviceCore & { app?: string }) => void) => {

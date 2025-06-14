@@ -6,9 +6,9 @@
   "reactive": false,
   "repository": "https://github.com/ItsRiprod/Deskthing-ThinClient/",
   "author": "Riprod",
-  "version": "0.11.2",
+  "version": "0.11.3",
   "compatibility": {
-    "server": ">=0.11.7",
+    "server": ">=0.11.8",
     "app": ">=0.11.0"
   },
   "context": {

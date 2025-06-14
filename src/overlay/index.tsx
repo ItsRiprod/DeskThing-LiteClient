@@ -1,6 +1,5 @@
 import { useWebSocketStore } from '@src/stores'
 import { useMemo } from 'react'
-import { ServerStatus } from './ConnectionStatus'
 import ScreenSaverWrapper from './ScreenSaver/ScreenSaverWrapper'
 
 interface OverlayProps {
@@ -26,7 +25,6 @@ const Overlays: React.FC<OverlayProps> = ({ children }) => {
 
   return (
     <div className="flex bg-black flex-col w-screen max-h-screen h-screen items-center justify-end">
-      <ServerStatus />
       {!isConnected && <ScreenSaverWrapper />}
       <div className={`h-full w-full transition-[padding]`}>{memoChildren}</div>
     </div>

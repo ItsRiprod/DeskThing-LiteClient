@@ -89,6 +89,7 @@ const defaultClient: Client = {
   identifiers: {},
   connectionState: ConnectionState.Disconnected,
   timestamp: 0,
+  meta: {},
   currentConfiguration: defaultConfig,
   currentMapping: {
     profileId: 'unset',

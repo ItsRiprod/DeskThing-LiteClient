@@ -14,6 +14,7 @@ interface AppState {
   setApps: (apps: App[]) => void
   setAppSettings: (appSettings: Record<string, AppSettings>) => void
   updateAppSettings: (app: string, appSettings: Partial<AppSettings>) => void
+  requestApps: () => Promise<void>
   getAppIcon(app: App): string
   saveSettings(appName: string): void
 }
@@ -43,6 +44,15 @@ export const useAppStore = create<AppState>((set, get) => ({
       }
       return { appSettings: updatedAppSettings }
     })
+  },
+  requestApps: async () => {
+    const send = useWebSocketStore.getState().send
+    const data: DeviceToDeskthingData = {
+      app: 'server',
+      type: DEVICE_DESKTHING.GET,
+      request: 'initialData'
+    }
+    await send(data)
   },
   saveSettings: async (appName: string) => {
     const send = useWebSocketStore.getState().send

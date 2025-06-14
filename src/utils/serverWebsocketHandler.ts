@@ -23,16 +23,15 @@ type DeskThingToDevice<T extends DESKTHING_DEVICE> = Extract<DeskThingToDeviceCo
 type SocketHandler = {
   [T in DESKTHING_DEVICE]: (
     data: DeskThingToDevice<T>
-  ) => void
+  ) => Promise<void> | void
 }
 
-// TODO: Make this type-safe
-const sendData = (data) => {
+const sendData = async (data: DeviceToDeskthingData) => {
   const send = useWebSocketStore.getState().send
-  send(data)
+  await send(data)
 }
 
-const handleGetManifest = (data: DeskThingToDevice<DESKTHING_DEVICE.GET>) => {
+const handleGetManifest = async (data: DeskThingToDevice<DESKTHING_DEVICE.GET>) => {
   switch (data.request) {
     case 'manifest': {
       const manifest = useSettingsStore.getState().manifest
@@ -44,7 +43,7 @@ const handleGetManifest = (data: DeskThingToDevice<DESKTHING_DEVICE.GET>) => {
       }
 
       Logger.info('Sending manifest', returnData)
-      sendData(returnData)
+      await sendData(returnData)
 
       break
     }
@@ -137,10 +136,10 @@ const socketHandlers: SocketHandler = {
   [DESKTHING_DEVICE.CONFIG]: HANDLE_CONFIG
 }
 
-export const handleServerSocket = (data: DeskThingToDeviceCore) => {
+export const handleServerSocket = async (data: DeskThingToDeviceCore): Promise<void> => {
   const handler = socketHandlers[data.type]
 
   if (handler) {
-    handler(data as any)
+    await handler(data as any)
   }
 }

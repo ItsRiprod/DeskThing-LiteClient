@@ -1,30 +1,36 @@
 import { FC, useRef, useEffect, useState, useCallback } from 'react'
-import { TimeUpdater } from '@src/components/TimeUpdater'
-import { useTimeStore, useAppStore, useSettingsStore } from '@src/stores'
+import { useWebSocketStore, useAppStore, useSettingsStore } from '@src/stores'
 import AppIcon from '@src/components/ui/AppButton'
 import { useUIStore } from '@src/stores/uiStore'
-import { App, EventMode } from '@deskthing/types'
+import { App, DESKTHING_DEVICE, EventMode } from '@deskthing/types'
 import { InformationComponent } from './InformationComponent'
 import { TopBarComponent } from './TopBarComponent'
+import { Hint } from '@src/components/Hint'
 
 export const DashboardPage: FC = () => {
+  // App Data
   const apps = useAppStore((store) => store.apps)
-  const wheelRotation = useUIStore((state) => state.wheelRotation)
-  const registerKeyHandler = useUIStore((state) => state.registerKeyHandler)
-  const setPage = useSettingsStore((state) => state.updateCurrentView)
-  const selectedAppRef = useRef<HTMLDivElement>(null)
-  const containerRef = useRef<HTMLDivElement>(null)
-  const appsContainerRef = useRef<HTMLDivElement>(null)
 
+  // UI Data
+  const wheelRotation = useUIStore((state) => state.wheelRotation)
   const [scrollY, setScrollY] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
   const [dragStart, setDragStart] = useState({ y: 0, scrollY: 0 })
   const [maxScroll, setMaxScroll] = useState(0)
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
-  const clampedWheelRotation = wheelRotation % apps.length
+  // Actions
+  const requestApps = useAppStore((store) => store.requestApps)
+  const registerKeyHandler = useUIStore((state) => state.registerKeyHandler)
+  const setPage = useSettingsStore((state) => state.updateCurrentView)
+  const once = useWebSocketStore((state) => state.once)
 
-  // Calculate scroll position based on time visibility
-  const timeHeight = 200 // Approximate height of time section
+  // Render Utilities
+  const selectedAppRef = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const appsContainerRef = useRef<HTMLDivElement>(null)
+  const clampedWheelRotation = ((wheelRotation % apps.length) + apps.length) % apps.length
+  const timeHeight = 800 // Approx height of time section
 
   // Update max scroll when apps change
   useEffect(() => {
@@ -107,7 +113,6 @@ export const DashboardPage: FC = () => {
   // Handle key events
   useEffect(() => {
     const removeHandler = registerKeyHandler('dashboard', (code, eventMode) => {
-      console.log('handling event', code, eventMode)
       if (eventMode === EventMode.PressShort && code == 'Enter') {
         const app = apps[clampedWheelRotation]
         if (app) {
@@ -123,42 +128,49 @@ export const DashboardPage: FC = () => {
 
   const handleAppClick = (app: App) => {
     setPage(app)
+    requestApps() // handle refreshing everything while the app is loading
+  }
+
+  const handleRefreshData = async () => {
+    setIsRefreshing(true)
+    requestApps()
+    once({ type: DESKTHING_DEVICE.APPS }, () => {
+      setIsRefreshing(false)
+    })
   }
 
   return (
     <div
       ref={containerRef}
-      className="w-full h-screen bg-gradient-to-b from-zinc-900 to-zinc-950 overflow-hidden flex flex-col relative select-none"
+      className="w-full max-h-screen h-screen bg-gradient-to-b from-zinc-900 to-zinc-950 overflow-hidden flex flex-col select-none"
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
       style={{ touchAction: 'none' }}
     >
-      <TimeUpdater />
       {/* Top Bar */}
       <TopBarComponent />
-
       {/* Scrollable content */}
       <div
-        className="w-full flex flex-col"
+        className="w-full flex flex-col mt-4"
         style={{
           transform: `translateY(-${scrollY}px)`,
           transition: isDragging ? 'none' : 'transform 0.1s ease-out'
         }}
       >
         {/* Top section */}
-        <div className="w-full flex items-center pt-4 justify-center transition-all duration-300">
+        <div className="w-full flex items-center justify-center transition-all duration-300">
           <InformationComponent />
         </div>
 
         {/* Apps grid */}
         <div ref={appsContainerRef} className="justify-evenly flex flex-wrap p-8 w-full">
-          {apps &&
+          {apps ? (
             apps.map((app, index) => (
-              <div ref={clampedWheelRotation === index ? selectedAppRef : null} key={app.name}>
+              <div ref={clampedWheelRotation === index ? selectedAppRef : null} key={index}>
                 <button
-                  className={`w-36 h-36 flex m-1 items-center flex-col justify-center p-4 rounded-3xl border-2 transition-all duration-300 ${
+                  className={`w-36 h-36 flex m-1 items-center flex-col justify-center transition-transform p-4 rounded-3xl border-2 ${
                     clampedWheelRotation === index
                       ? 'border-white/20 shadow-lg shadow-white/10 scale-105 bg-white/5'
                       : 'bg-neutral-950/50 border-transparent hover:bg-white/5'
@@ -171,9 +183,30 @@ export const DashboardPage: FC = () => {
                   <AppIcon app={app} key={app.name} />
                 </button>
               </div>
-            ))}
+            ))
+          ) : (
+            <button
+              onClick={handleRefreshData}
+              disabled={isRefreshing}
+              className="px-4 group items-center flex justify-center py-2 bg-white/5 hover:bg-white/10 rounded-lg border border-white/10 transition-colors duration-200"
+            >
+              <div className="group-disabled:hidden items-center flex">
+                <p className="text-sm text-white/80">Refresh</p>
+              </div>
+              <div className="group-disabled:flex hidden items-center">
+                <div className="w-4 h-4 rounded-full border-2 border-white/20 border-t-white/60 mr-2 animate-spin" />
+                <p className="text-sm text-white/50">Refreshing</p>
+              </div>
+            </button>
+          )}
         </div>
       </div>
+      <Hint
+        flag="welcome-card"
+        title="Welcome to ThinThing"
+        message="You'll notice there is nothing here besides apps, this page, and a screensaver. Config should be done from the Server"
+        position="center"
+      />
     </div>
   )
 }
