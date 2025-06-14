@@ -1,6 +1,6 @@
+import { IconLogoGear } from '@src/assets/Icons'
 import { Icon } from '@src/assets/Icons/Icons'
 import { useMappingStore, useSettingsStore } from '@src/stores'
-import { IconLogoGear } from '@src/assets/Icons'
 import { useEffect, useState } from 'react'
 
 interface ActionProps {
@@ -19,7 +19,7 @@ interface ActionProps {
 const ActionIcon: React.FC<ActionProps> = ({ url, className }) => {
   const getActionUrl = useMappingStore((store) => store.getActionUrl)
   const [svgContent, setSvgContent] = useState<string | null>(null)
-  const iconColor = useSettingsStore((store) => store.preferences.theme.icons)
+  const iconColor = useSettingsStore((store) => store.preferences?.theme?.icons)
 
   useEffect(() => {
     const abortController = new AbortController()

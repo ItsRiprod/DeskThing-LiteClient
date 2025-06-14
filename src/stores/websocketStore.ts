@@ -2,8 +2,9 @@ import { create } from 'zustand'
 import { WebSocketManager } from '../utils/websocketManager' 
 import { useSettingsStore } from './settingsStore'
 import { useMusicStore } from './musicStore'
-import { DeviceToDeskthingData, DeskThingToDeviceCore } from '@deskthing/types'
+import { DeviceToDeskthingData, DeskThingToDeviceCore, DESKTHING_DEVICE, SongData } from '@deskthing/types'
 import { useClientStore } from './clientStore'
+import { handleServerSocket } from '@src/utils/serverWebsocketHandler'
 
 /**
  * Provides a WebSocket store that manages the connection and communication with a WebSocket server.
@@ -33,10 +34,11 @@ export const useWebSocketStore = create<WebSocketState>((set, get) => {
   
   const manifest = useSettingsStore.getState().manifest
   const clientId = useClientStore.getState().client.clientId
+  let prevTrackName = ''
   
   let wsUrl: string | undefined = undefined
 
-  if (manifest.context.ip && manifest.context.port) {
+  if (manifest?.context?.ip && manifest?.context?.port) {
     wsUrl = `ws://${manifest.context.ip}:${manifest.context.port}`
   } else {
     console.debug('WebSocket URL not ready yet, waiting...')
@@ -56,9 +58,27 @@ export const useWebSocketStore = create<WebSocketState>((set, get) => {
       isReconnecting: status === 'reconnecting'
     })
   })
+
+  const handleSongData = (songData: SongData) => {
+    if (songData.track_name != undefined && songData.track_name !== prevTrackName) {
+      prevTrackName = songData.track_name
+      useMusicStore.getState().requestMusicData()
+    }
+    useMusicStore.getState().setSong({ ...songData, id: String(Date.now()) })
+  }
+
+  const messageHandler = (socketData: DeskThingToDeviceCore & { app?: string }) => {
+    if (socketData.app !== 'client') return
+
+    if (socketData.type == DESKTHING_DEVICE.MUSIC) {
+      handleSongData(socketData.payload)
+    }
+    handleServerSocket(socketData)
+  }
   
   if (wsUrl) {
     manager.connect()
+    manager.addListener(messageHandler)
   }
 
   useSettingsStore.subscribe((state) => {

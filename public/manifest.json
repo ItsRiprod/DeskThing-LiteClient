@@ -1,10 +1,10 @@
 {
-  "name": "Deskthing Client",
-  "id": "deskthing",
-  "short_name": "DT",
-  "description": "The base DeskthingUI for the DeskThing",
-  "reactive": true,
-  "repository": "https://github.com/ItsRiprod/Deskthing-Client/",
+  "name": "Deskthing Thin Client",
+  "id": "thinthing",
+  "short_name": "ThinThing",
+  "description": "The Car Thing specific thin DeskThing client for use with DeskThing",
+  "reactive": false,
+  "repository": "https://github.com/ItsRiprod/Deskthing-ThinClient/",
   "author": "Riprod",
   "version": "0.11.2",
   "compatibility": {

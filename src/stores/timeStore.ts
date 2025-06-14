@@ -46,7 +46,7 @@ export const useTimeStore = create<TimeStore>((set, get) => ({
   updateCurrentTime: () => {
     const { serverTimeOffset, timezoneOffset } = get()
     const currentTime = new Date(Date.now() + serverTimeOffset) // Adjust for server offset
-    const is24Hour = useSettingsStore.getState().preferences.use24hour
+    const is24Hour = useSettingsStore.getState().preferences?.use24hour
     // Convert to server timezone
     const adjustedTime = new Date(currentTime.getTime() + timezoneOffset * 60000)
 

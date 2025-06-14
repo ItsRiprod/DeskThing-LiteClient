@@ -1,6 +1,6 @@
-import { useMappingStore } from '@src/stores'
 import { useEffect } from 'react'
 import { EventMode } from '@deskthing/types'
+import { useUIStore } from '@src/stores/uiStore'
 
 /**
  * The `ButtonListener` component is responsible for handling keyboard and mouse wheel events and executing corresponding actions.
@@ -10,9 +10,8 @@ import { EventMode } from '@deskthing/types'
  * The component also manages the state of button presses, including handling long presses and differentiating between short and long presses.
  */
 export const ButtonListener = () => {
-  const executeAction = useMappingStore((store) => store.executeAction)
-  const executeKey = useMappingStore((store) => store.executeKey)
-  const getActions = useMappingStore((store) => store.getButtonAction)
+  const setWheelRotation = useUIStore((state) => state.setWheelRotation)
+  const handleButton = useUIStore((state) => state.buttonEventHandler)
 
   useEffect(() => {
     const longPressTimeouts = new Map<string, number>()
@@ -21,44 +20,30 @@ export const ButtonListener = () => {
     const keyDownHandler = (e: KeyboardEvent) => {
       if (e.defaultPrevented) return
 
-      // Only set down if it is not already down or already a long press
-      if (
-        buttonStates[e.key] !== EventMode.PressLong &&
-        buttonStates[e.key] !== EventMode.KeyDown
-      ) {
-        const action = getActions(e.code, EventMode.KeyDown)
-        if (action) executeAction(action)
-        buttonStates[e.key] = EventMode.KeyDown
-      }
-
       // Ensure that you dont double-call a long press
       if (!longPressTimeouts.has(e.key)) {
         const timeout = window.setTimeout(() => {
-          buttonStates[e.key] = EventMode.PressLong
-          const longPressAction = getActions(e.code, EventMode.PressLong)
-          if (longPressAction) executeAction(longPressAction)
+          buttonStates[e.code] = EventMode.PressLong
+          handleButton(e.code, EventMode.PressLong) // long press
         }, 400)
 
-        longPressTimeouts.set(e.key, timeout)
+        longPressTimeouts.set(e.code, timeout)
       }
     }
+
     const keyUpHandler = (e: KeyboardEvent) => {
       if (e.defaultPrevented) return
 
       // Dont notify if the most recent action was a longpress
-      if (buttonStates[e.key] !== EventMode.PressLong) {
-        const shortPressAction = getActions(e.code, EventMode.PressShort)
-        shortPressAction && executeAction(shortPressAction)
+      if (buttonStates[e.code] !== EventMode.PressLong) {
+        handleButton(e.code, EventMode.PressShort) // short press
+        buttonStates[e.code] = EventMode.PressShort
       }
 
-      const action = getActions(e.code, EventMode.KeyUp)
-      action && executeAction(action)
-      buttonStates[e.key] = EventMode.KeyUp
-
       // Clear the event timeout to cancel a long press and cleanup
-      if (longPressTimeouts.has(e.key)) {
-        clearTimeout(longPressTimeouts.get(e.key)!)
-        longPressTimeouts.delete(e.key)
+      if (longPressTimeouts.has(e.code)) {
+        clearTimeout(longPressTimeouts.get(e.code)!)
+        longPressTimeouts.delete(e.code)
       }
     }
 
@@ -75,19 +60,21 @@ export const ButtonListener = () => {
   useEffect(() => {
     const handleScroll = (event: WheelEvent) => {
       if (event.defaultPrevented) return
+      event.preventDefault()
       const deltaY = event.deltaY
       const deltaX = event.deltaX
 
       if (Math.abs(deltaX) > Math.abs(deltaY)) {
         // Horizontal scroll
-        executeKey('Scroll', deltaX > 0 ? EventMode.ScrollRight : EventMode.ScrollLeft)
+        setWheelRotation((prev) => prev + (deltaX > 0 ? 1 : -1))
       } else {
         // Vertical scroll
-        executeKey('Scroll', deltaY > 0 ? EventMode.ScrollDown : EventMode.ScrollUp)
+        setWheelRotation((prev) => prev + (deltaY > 0 ? 1 : -1))
       }
+
     }
 
-    window.addEventListener('wheel', handleScroll, { passive: true })
+    window.addEventListener('wheel', handleScroll, { passive: false })
 
     return () => {
       window.removeEventListener('wheel', handleScroll)

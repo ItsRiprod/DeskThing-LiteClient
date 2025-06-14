@@ -19,7 +19,13 @@ export class WebSocketManager {
   private listeners: SocketEventListener[] = []
   private statusListeners: StatusListener[] = []
   private reconnecting = false
-  private url: string
+  private _url: string
+  public get url() {
+    return this._url
+  }
+  private set url(value: string) {
+    this._url = value
+  }
   private heartbeatInterval: NodeJS.Timeout | null = null
   private pongTimeout: NodeJS.Timeout | null = null
   private missedPongs = 0

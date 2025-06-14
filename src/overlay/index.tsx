@@ -1,6 +1,4 @@
-import { useSettingsStore, useWebSocketStore } from '@src/stores'
-import AppTray from './AppTray'
-import VolumeOverlay from './Volume'
+import { useWebSocketStore } from '@src/stores'
 import { useMemo } from 'react'
 import { ServerStatus } from './ConnectionStatus'
 import ScreenSaverWrapper from './ScreenSaver/ScreenSaverWrapper'
@@ -23,32 +21,14 @@ interface OverlayProps {
  * The component also adjusts the height and margin of the main content based on the user's preferences, such as the theme scale and miniplayer visibility.
  */
 const Overlays: React.FC<OverlayProps> = ({ children }) => {
-  const preferences = useSettingsStore((store) => store.preferences)
   const isConnected = useWebSocketStore((state) => state.isConnected)
-  const height = useMemo(() => {
-    return preferences?.theme?.scale == 'small'
-      ? 'pb-16'
-      : preferences?.theme?.scale == 'medium'
-        ? 'pb-32'
-        : 'pb-48'
-  }, [preferences?.theme?.scale])
-
-  const margin = useMemo(() => {
-    return preferences?.miniplayer.state !== 'hidden'
-  }, [preferences?.miniplayer.state])
   const memoChildren = useMemo(() => children, [children])
 
   return (
     <div className="flex bg-black flex-col w-screen max-h-screen h-screen items-center justify-end">
-      <AppTray />
       <ServerStatus />
-      <VolumeOverlay />
       {!isConnected && <ScreenSaverWrapper />}
-      <div
-        className={`h-full w-full transition-[padding] ${margin && height}`}
-      >
-        {memoChildren}
-      </div>
+      <div className={`h-full w-full transition-[padding]`}>{memoChildren}</div>
     </div>
   )
 }

@@ -7,15 +7,12 @@ import {
   useWebSocketStore
 } from '@src/stores'
 import { useTimeStore } from '@src/stores/timeStore'
-import { AppTriggerButton, AppTriggerAction, AppTriggerKey } from '@src/types'
 import {
   CLIENT_REQUESTS,
   ClientToDeviceData,
   DEVICE_CLIENT,
   DEVICE_DESKTHING,
-  DeviceToClientCore,
-  DeviceToClientData,
-  EventMode
+  DeviceToClientCore
 } from '@deskthing/types'
 import { useRef, useEffect } from 'react'
 import Logger from '@src/utils/Logger'
@@ -36,8 +33,8 @@ interface WebPageProps {
  * @returns {JSX.Element} - The rendered `WebPage` component.
  */
 const WebPage: React.FC<WebPageProps> = ({ currentView }: WebPageProps): JSX.Element => {
-  const ip = useSettingsStore((state) => state.manifest.context.ip)
-  const port = useSettingsStore((state) => state.manifest.context.port)
+  const ip = useSettingsStore((state) => state.manifest?.context?.ip)
+  const port = useSettingsStore((state) => state.manifest?.context?.port)
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const appSettings = useAppStore((state) => state.appSettings)
   const music = useMusicStore((state) => state.song)
@@ -50,41 +47,6 @@ const WebPage: React.FC<WebPageProps> = ({ currentView }: WebPageProps): JSX.Ele
   const executeKey = useMappingStore((state) => state.executeKey)
   const currentTime = useTimeStore((state) => state.currentTimeFormatted)
   const manifest = useSettingsStore((state) => state.manifest)
-
-  // Handles triggering actions
-  const handleAction = (data: AppTriggerAction) => {
-    executeAction({ source: currentView, ...data.payload })
-  }
-
-  // Handles any button presses from the iframe to the main app
-  const handleButton = (data: AppTriggerButton) => {
-    // I did this to myself...
-    const legacyMap = {
-      KeyUp: EventMode.KeyUp,
-      KeyDown: EventMode.KeyDown,
-      Left: EventMode.ScrollLeft,
-      Right: EventMode.ScrollRight,
-      Up: EventMode.ScrollUp,
-      Down: EventMode.ScrollDown
-    }
-
-    // This is a legacy mapping for the old way of doing things
-    const legacylegacyMap = {
-      Up: EventMode.KeyUp,
-      Down: EventMode.KeyDown,
-      Left: EventMode.ScrollLeft,
-      Right: EventMode.ScrollRight
-    }
-    executeKey(
-      data.payload.button,
-      legacyMap[data.payload.mode] || legacylegacyMap[data.payload.flavor] || EventMode.KeyDown
-    )
-  }
-
-  // Handles any key presses from the iframe to the main app
-  const handleKey = (data: AppTriggerKey) => {
-    executeKey(data.payload.id, data.payload.mode)
-  }
 
   // Handles any music requests from the iframe to the main app
   const handleMusic = () => {
@@ -130,21 +92,9 @@ const WebPage: React.FC<WebPageProps> = ({ currentView }: WebPageProps): JSX.Ele
     } as DeviceToClientCore)
   }
 
-  const handleLog = (data: Extract<ClientToDeviceData, { app: 'client'; type: 'log' }>) => {
-    Logger.log(data.request, currentView, data.payload.message, ...data.payload.data)
-  }
-
   const handleManifest = () => {
     send({ type: DEVICE_CLIENT.MANIFEST, app: 'client', payload: manifest })
   }
-
-  const buttonHandlers = {
-    button: handleButton,
-    key: handleKey,
-    action: handleAction,
-    log: handleLog
-  }
-
   const getRequestHandlers: {
     [key in Extract<ClientToDeviceData, { app: 'client'; type: 'get' }>['request']]: (
       data: Extract<ClientToDeviceData, { request: key; app: 'client'; type: 'get' }>['payload']
@@ -158,7 +108,7 @@ const WebPage: React.FC<WebPageProps> = ({ currentView }: WebPageProps): JSX.Ele
     manifest: handleManifest
   }
 
-  const send = (data: DeviceToClientData) => {
+  const send = (data: DeviceToClientCore) => {
     if (iframeRef.current && iframeRef.current.contentWindow) {
       const augmentedData = { ...data, source: 'deskthing' }
       iframeRef.current.contentWindow.postMessage(augmentedData, '*')
@@ -169,7 +119,7 @@ const WebPage: React.FC<WebPageProps> = ({ currentView }: WebPageProps): JSX.Ele
     const removeListener = addWebsocketListener((data) => {
       if (data.app != currentView) return
 
-      send(data as unknown as DeviceToClientData)
+      send(data as unknown as DeviceToClientCore)
     })
 
     return () => {
@@ -188,7 +138,7 @@ const WebPage: React.FC<WebPageProps> = ({ currentView }: WebPageProps): JSX.Ele
       send({ type: DEVICE_CLIENT.APPS, app: 'client', payload: apps })
     }
   }, [apps])
-  
+
   useEffect(() => {
     if (appSettings && appSettings[currentView]) {
       send({
@@ -198,7 +148,7 @@ const WebPage: React.FC<WebPageProps> = ({ currentView }: WebPageProps): JSX.Ele
       })
     }
   }, [appSettings, currentView])
-  
+
   useEffect(() => {
     if (currentTime) {
       send({ type: DEVICE_CLIENT.TIME, app: 'client', request: 'set', payload: currentTime })
@@ -240,15 +190,12 @@ const WebPage: React.FC<WebPageProps> = ({ currentView }: WebPageProps): JSX.Ele
           } else {
             Logger.error('Unknown request type: ', appDataRequest.request)
           }
-        } else if ((appDataRequest.type as string) === 'button') {
-          // legacy
-          buttonHandlers.button(appDataRequest as unknown as AppTriggerButton)
         } else if (appDataRequest.type === 'key') {
-          buttonHandlers.key(appDataRequest)
+          executeKey(appDataRequest.payload.id, appDataRequest.payload.mode)
         } else if (appDataRequest.type === 'action') {
-          buttonHandlers.action(appDataRequest)
+          executeAction({ source: currentView, ...appDataRequest.payload })
         } else if (appDataRequest.type === 'log') {
-          buttonHandlers.log(appDataRequest)
+          Logger.log(appDataRequest.request, currentView, appDataRequest.payload.message, ...appDataRequest.payload.data)
         }
       } else {
         sendSocket({

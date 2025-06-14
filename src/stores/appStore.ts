@@ -2,11 +2,9 @@ import { create } from 'zustand'
 import {
   AppSettings,
   App,
-  SocketData,
   DeviceToDeskthingData,
   DEVICE_DESKTHING
 } from '@deskthing/types'
-import { SocketConfig, SocketSettings } from '@src/types'
 import { useSettingsStore } from './settingsStore'
 import useWebSocketStore from './websocketStore'
 
@@ -64,10 +62,3 @@ export const useAppStore = create<AppState>((set, get) => ({
     return `http://${ip}:${port}/icons/${app.name}/icons/${app.name}.svg`
   }
 }))
-
-export function isSocketApp(data: SocketData): data is SocketConfig {
-  return data.app === 'client' && data.type === 'config'
-}
-export function isSocketSettings(data: SocketData): data is SocketSettings {
-  return data.app === 'client' && data.type === 'settings'
-}

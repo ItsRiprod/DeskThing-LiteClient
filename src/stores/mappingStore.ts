@@ -3,7 +3,7 @@ import { Action, ActionReference, EventMode, MappingProfile, KeyReference } from
 import { useSettingsStore } from './settingsStore'
 import { useAppStore } from './appStore'
 import { ActionHandler } from '@src/utils/serverActionHandler'
-import { useActionStore } from './actionStore'
+import { useUIStore } from './uiStore'
 
 /**
  * (recovered comment i left who knows how long ago)
@@ -57,29 +57,15 @@ export const useMappingStore = create<MappingState>((set, get) => ({
   },
 
   executeKey: (key: string, eventMode: EventMode) => {
-    if (key == 'Scroll') {
-      const wheelState = useActionStore.getState().wheelState
-      if (wheelState) {
-        if (eventMode == EventMode.ScrollUp || eventMode == EventMode.ScrollRight) {
-          const incrementWheelRotation = useActionStore.getState().incrementWheelRotation
-          incrementWheelRotation()
-          return
-        } else if (eventMode == EventMode.ScrollDown || eventMode == EventMode.ScrollLeft) {
-          const decrementWheelRotation = useActionStore.getState().decrementWheelRotation
-          decrementWheelRotation()
-        } else {
-          console.error('Unknown scroll event mode', eventMode)
-        }
-        return
-      }
-    }
-
     const profile = get().profile
     if (profile?.mapping[key] && profile.mapping[key][eventMode]) {
       const action = profile.mapping[key][eventMode]
       if (action && action.enabled) {
         get().executeAction(action)
       }
+    } else {
+      const runKey = useUIStore.getState().buttonEventHandler
+      runKey(key, eventMode)
     }
   },
 
@@ -129,7 +115,7 @@ export const useMappingStore = create<MappingState>((set, get) => ({
   },
 
   updateIcon: (id: string, icon: string, source: string = 'server') => {
-    if (get().profile.actions.find((a) => a.id === id && a.source === source)?.icon === icon) {
+    if (get().profile?.actions?.find((a) => a.id === id && a.source === source)?.icon === icon) {
       return
     }
 

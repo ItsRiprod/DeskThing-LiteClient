@@ -1,4 +1,3 @@
-import { IconLoading } from '@src/assets/Icons'
 import { useWebSocketStore } from '@src/stores/'
 import { useUIStore } from '@src/stores/uiStore'
 
@@ -20,7 +19,7 @@ export const ServerStatus = () => {
     <div className="fixed top-4 left-4 z-40 flex items-center rounded-lg bg-rose-950 px-4 py-2 text-sm text-white">
       {isReconnecting ? (
         <div className="flex items-center">
-          <IconLoading iconSize={12} strokeWidth={5} className='animate-spin mr-2' />
+          <div className="h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
           <p>Reconnecting</p>
         </div>
       ) : (

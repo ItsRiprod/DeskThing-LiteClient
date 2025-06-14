@@ -39,32 +39,40 @@ export const useSettingsStore = create<SettingsState>()(
         })),
       updatePreferences: (newPreferences) =>
         set((state) => {
-          if (newPreferences.currentView?.name != state.preferences.currentView?.name) {
+          if (newPreferences?.currentView?.name != state.preferences?.currentView?.name) {
             const send = useWebSocketStore.getState().send
             send({
               type: DEVICE_DESKTHING.VIEW,
               request: 'change',
               app: 'server',
               payload: {
-                currentApp: newPreferences.currentView?.name,
-                previousApp: state.preferences.currentView?.name,
+                currentApp: newPreferences?.currentView?.name,
+                previousApp: state.preferences?.currentView?.name,
               }
             })
           }
           return {
-          preferences: { ...state.preferences, ...newPreferences }
-        }}),
-      updateCurrentView: (newView) => {
-        const send = useWebSocketStore.getState().send
-        send({
-          app: 'server',
-          type: DEVICE_DESKTHING.VIEW,
-          request: 'change',
-          payload: {
-            currentApp: newView.name,
-            previousApp: get().preferences.currentView.name
+            preferences: { ...state.preferences, ...newPreferences }
           }
-        })
+        }),
+      updateCurrentView: (newView) => {
+
+        const prevView = get().preferences?.currentView?.name
+
+        // Skip if both the prevView is missing and the new name is dashboard
+        if (!(!prevView && newView.name == 'dashboard')) {
+          const send = useWebSocketStore.getState().send
+          send({
+            app: 'server',
+            type: DEVICE_DESKTHING.VIEW,
+            request: 'change',
+            payload: {
+              currentApp: newView.name,
+              previousApp: prevView
+            }
+          })
+        }
+
         set((state) => ({
           preferences: { ...state.preferences, currentView: newView }
         }))

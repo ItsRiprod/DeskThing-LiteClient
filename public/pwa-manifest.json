@@ -1,10 +1,10 @@
 {
-    "name": "DeskThing",
-    "short_name": "DeskThing",
+    "name": "DeskThing Thin",
+    "short_name": "ThinThing",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#000000",
-    "description": "The DeskThing client",
+    "description": "The DeskThing Thin client",
     "icons": [
       {
         "src": "images/icon-192x192.png",

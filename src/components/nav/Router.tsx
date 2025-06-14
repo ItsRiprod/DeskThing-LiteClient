@@ -3,7 +3,7 @@ import AppPage from '../../pages/app'
 import React, { useEffect } from 'react'
 import { Route, Routes, useNavigate } from 'react-router-dom'
 import ClockPage from '@src/pages/clock'
-import Logger from '@src/utils/Logger'
+import { DashboardPage } from '@src/pages/dashboard'
 
 /**
  * A list of system application names that are considered "core" or "system" apps in the application.
@@ -11,14 +11,7 @@ import Logger from '@src/utils/Logger'
  * handling or behavior compared to other "user" applications.
  */
 const SystemApps = [
-  'nowplaying',
-  'developer',
-  'landing',
-  'preferences',
-  'settings',
-  'utility',
-  'dashboard',
-  'clock'
+  'dashboard'
 ]
 
 /**
@@ -36,16 +29,11 @@ const NavRouter: React.FC = () => {
   const preferences = useSettingsStore((store) => store.preferences)
 
   useEffect(() => {
-    const currentView = preferences.currentView?.name || 'dashboard'
-    if (preferences.onboarding) {
-      if (SystemApps.includes(currentView)) {
-        navigate('/' + currentView)
-      } else {
-        navigate('/app/' + currentView)
-      }
+    const currentView = preferences?.currentView?.name || 'dashboard'
+    if (SystemApps.includes(currentView)) {
+      navigate('/' + currentView)
     } else {
-      Logger.info('User onboarding incomplete, navigating to landing page')
-      navigate('/')
+      navigate('/app/' + currentView)
     }
   }, [navigate, preferences])
 
@@ -55,6 +43,7 @@ const NavRouter: React.FC = () => {
         <Route path={'/clock'} element={<ClockPage />} />
         <Route path={'/app/:app'} element={<AppPage />} />
         <Route path={'/app'} element={<AppPage />} />
+        <Route path={'/dashboard'} element={<DashboardPage />} />
       </Routes>
     </>
   )

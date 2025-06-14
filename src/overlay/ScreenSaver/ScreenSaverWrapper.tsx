@@ -2,7 +2,6 @@
   import { useSettingsStore } from '@src/stores';
   import Clock from '@src/pages/clock';
   import { ScreenSaverLogo } from './Logo';
-import { IconX } from '@src/assets/Icons';
 import Button from '@src/components/ui/Button';
 import { useUIStore } from '@src/stores/uiStore'
 
@@ -64,7 +63,7 @@ import { useUIStore } from '@src/stores/uiStore'
     };
 
     const renderScreenSaver = () => {
-      switch (preferences.ScreensaverType?.type || 'black') {
+      switch (preferences?.ScreensaverType?.type || 'black') {
         case 'clock':
           return <Clock />;
         case 'logo':
@@ -80,7 +79,7 @@ import { useUIStore } from '@src/stores/uiStore'
             <div className={`${screensaverActive ? 'bg-black opacity-100' : 'bg-black/0 opacity-0'} w-screen duration-[5s] shrink-0 h-screen transition-all`}>
                 {renderScreenSaver()}
                 <Button  className="absolute bottom-2 right-2" onClick={handleClose}>
-                  <IconX />
+                  X
                 </Button>
             </div>
         </div>

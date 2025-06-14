@@ -5,7 +5,7 @@ import {
   useMappingStore,
   useWebSocketStore
 } from '../stores'
-import { useActionStore } from '@src/stores/actionStore'
+import { useUIStore } from '@src/stores/uiStore'
 import {
   Action,
   AUDIO_REQUESTS,
@@ -201,7 +201,7 @@ export class ActionHandler {
   }
 
   Swap = async (action: Action) => {
-    const currentView = useSettingsStore.getState().preferences.currentView.name
+    const currentView = useSettingsStore.getState().preferences?.currentView?.name
     const socketData: DeviceToDeskthingData = {
       app: 'server',
       type: DEVICE_DESKTHING.SET,
@@ -264,7 +264,7 @@ export class ActionHandler {
   }
 
   swipeL() {
-    const currentView = useSettingsStore.getState().preferences.currentView.name
+    const currentView = useSettingsStore.getState().preferences?.currentView?.name
     const apps = useAppStore.getState().apps
     const currentIndex = apps.findIndex((app) => app.name === currentView)
     const nextIndex = (currentIndex - 1 + apps.length) % apps.length
@@ -280,12 +280,11 @@ export class ActionHandler {
   }
 
   Wheel() {
-    const setWheel = useActionStore.getState().setWheelState
-    setWheel(true)
+    // do nothing
   }
 
   swipeR() {
-    const currentView = useSettingsStore.getState().preferences.currentView.name
+    const currentView = useSettingsStore.getState().preferences?.currentView?.name
     const apps = useAppStore.getState().apps
     const currentIndex = apps.findIndex((app) => app.name === currentView)
     const nextIndex = (currentIndex + 1) % apps.length

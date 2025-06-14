@@ -1,18 +1,15 @@
 
 import { DEVICE_DESKTHING, Log, LOGGING_LEVELS } from '@deskthing/types'
-import { SettingsState, useSettingsStore } from '@src/stores/settingsStore'
 import { useWebSocketStore, WebSocketState } from '@src/stores/websocketStore'
 
 export class Logger {
   private static instance: Logger
-  private settingsStore: SettingsState | undefined = undefined
   private webSocketStore: WebSocketState | undefined = undefined
 
   private constructor() {
     setTimeout(() => {
-      this.settingsStore = useSettingsStore.getState()
       this.webSocketStore = useWebSocketStore.getState()
-    // Wait a bit before making the stores
+      // Wait a bit before making the stores
     }, 100)
   }
 
@@ -34,28 +31,25 @@ export class Logger {
 
   public async log(type: LOGGING_LEVELS, app: string, payload: string, ...data: any[]) {
     const logEntry = this.formatMessage(type, payload, app)
-    
-    // Add to settings store
-    this.settingsStore?.addLog(logEntry)
-    
-      // Log to console
-      switch (type) {
-        case LOGGING_LEVELS.ERROR:
-          console.error(`[${app} ${type}] ${payload}`, ...data)
-          break
-        case LOGGING_LEVELS.WARN:
-          console.warn(`[${app} ${type}] ${payload}`, ...data)
-          break
-        case LOGGING_LEVELS.LOG:
-          console.info(`[${app} ${type}] ${payload}`, ...data)
-          break
-        case LOGGING_LEVELS.DEBUG:
-          console.debug(`[${app} ${type}] ${payload}`, ...data)
-          break
-        default:
-          console.log(`[${app} ${type}] ${payload}`, ...data)
-      }
-    
+
+    // Log to console
+    switch (type) {
+      case LOGGING_LEVELS.ERROR:
+        console.error(`[${app} ${type}] ${payload}`, ...data)
+        break
+      case LOGGING_LEVELS.WARN:
+        console.warn(`[${app} ${type}] ${payload}`, ...data)
+        break
+      case LOGGING_LEVELS.LOG:
+        console.info(`[${app} ${type}] ${payload}`, ...data)
+        break
+      case LOGGING_LEVELS.DEBUG:
+        console.debug(`[${app} ${type}] ${payload}`, ...data)
+        break
+      default:
+        console.log(`[${app} ${type}] ${payload}`, ...data)
+    }
+
     // Send to server
     try {
       await this.webSocketStore?.send({
