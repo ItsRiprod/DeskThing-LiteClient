@@ -75,7 +75,7 @@ import { useUIStore } from '@src/stores/uiStore'
     }
 
     return (
-        <div className={`${screensaverActive ? 'max-h-full z-10' : 'max-h-0'} w-full overflow-hidden duration-[3s] fixed h-full flex items-center justify-center transition-all`}>
+        <div className={`${screensaverActive ? 'max-h-full z-50' : 'max-h-0'} w-full overflow-hidden duration-[3s] fixed h-full flex items-center justify-center transition-all`}>
             <div className={`${screensaverActive ? 'bg-black opacity-100' : 'bg-black/0 opacity-0'} w-screen duration-[5s] shrink-0 h-screen transition-all`}>
                 {renderScreenSaver()}
                 <Button  className="absolute bottom-2 right-2" onClick={handleClose}>

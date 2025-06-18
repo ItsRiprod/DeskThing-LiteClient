@@ -8,6 +8,8 @@ import {
   Log,
 } from '@deskthing/types'
 import useWebSocketStore from './websocketStore'
+import { defaultManifest } from '@src/constants/defaultManifest'
+import { defaultPreferences } from '@src/constants/defaultPreferences'
 export interface SettingsState {
   logs: Log[]
   manifest: ClientManifest | undefined
@@ -29,8 +31,8 @@ export const useSettingsStore = create<SettingsState>()(
   persist(
     (set, get) => ({
       logs: [],
-      manifest: undefined,
-      preferences: undefined,
+      manifest: defaultManifest,
+      preferences: defaultPreferences,
       flags: {},
       updateManifest: (newSettings) =>
         set((state) => ({

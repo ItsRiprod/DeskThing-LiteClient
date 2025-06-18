@@ -29,7 +29,7 @@ export interface MusicState {
   seek: (position: number) => void
   like: () => void
   setVolume: (volume: number) => void
-  setRepeat: (state: 'context' | 'track' | 'off') => void
+  setRepeat: (state: "off" | "all" | "track") => void
   setShuffle: () => void
 }
 

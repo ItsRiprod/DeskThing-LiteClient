@@ -8,11 +8,9 @@ export const TopBarComponent = () => {
   const connectionAddress = useWebSocketStore((state) => state.socketManager?.url || 'Unknown')
   const isScreensaverActive = useUIStore((state) => state.isScreensaverActive)
 
-  if (isScreensaverActive) return null
-
   return (
     <div
-      className="z-40 flex items-center justify-between px-4 py-2"
+      className="z-40 flex fixed top-0 items-center justify-between px-4 py-2"
       style={{
         backgroundColor: 'rgba(10, 10, 10, 0.5)'
       }}

@@ -156,13 +156,13 @@ export class ActionHandler {
 
   Repeat = () => {
     const songData = useMusicStore.getState().song
-    let newRepeatState
+    let newRepeatState: "off" | "all" | "track"
     switch (songData.repeat_state) {
       case 'off':
-        newRepeatState = 'context'
+        newRepeatState = 'all'
         useMappingStore.getState().updateIcon('repeat', '')
         break
-      case 'context':
+      case 'all':
         newRepeatState = 'track'
         useMappingStore.getState().updateIcon('repeat', 'repeatActive')
         break
