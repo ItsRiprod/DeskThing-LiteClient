@@ -1,6 +1,6 @@
 {
-  "name": "deskthing-thinclient",
-  "version": "0.11.3",
+  "name": "deskthing-liteclient",
+  "version": "0.11.4",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -17,12 +17,11 @@
     "zustand": "^5.0.1"
   },
   "devDependencies": {
-    "@deskthing/cli": "^0.11.4",
-    "@deskthing/types": "^0.11.8",
+    "@deskthing/cli": "^0.11.9",
+    "@deskthing/types": "^0.11.11",
     "@eslint/js": "^9.13.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
-    "@vitejs/plugin-legacy": "^5.4.3",
     "@vitejs/plugin-react": "^4.3.3",
     "autoprefixer": "^10.4.20",
     "eslint": "^9.13.0",

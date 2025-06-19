@@ -9,8 +9,8 @@ export const defaultManifest: ClientManifest = {
     method: ClientConnectionMethod.Unknown,
     id: ClientPlatformIDs.Unknown,
     name: 'Unknown Connection Method',
-    ip: undefined,
-    port: undefined
+    ip: '192.168.159.1',
+    port: 8891
   },
   reactive: false,
   author: '',

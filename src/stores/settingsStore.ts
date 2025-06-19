@@ -5,15 +5,17 @@ import {
   ClientConfigurations,
   ClientManifest,
   DEVICE_DESKTHING,
-  Log,
+  DeviceToDeskthingData,
+  Log
 } from '@deskthing/types'
 import useWebSocketStore from './websocketStore'
 import { defaultManifest } from '@src/constants/defaultManifest'
 import { defaultPreferences } from '@src/constants/defaultPreferences'
+import Logger from '@src/utils/Logger'
 export interface SettingsState {
   logs: Log[]
-  manifest: ClientManifest | undefined
-  preferences: ClientConfigurations | undefined
+  manifest: ClientManifest
+  preferences: ClientConfigurations
   flags: Record<string, boolean>
   updateManifest: (settings: Partial<ClientManifest>) => void
   updatePreferences: (preferences: Partial<ClientConfigurations>) => void
@@ -34,10 +36,26 @@ export const useSettingsStore = create<SettingsState>()(
       manifest: defaultManifest,
       preferences: defaultPreferences,
       flags: {},
-      updateManifest: (newSettings) =>
-        set((state) => ({
-          manifest: { ...state.manifest, ...newSettings }
-        })),
+      updateManifest: (newSettings) => {
+        set((state) => {
+          const combinedManifest = { ...state.manifest, ...newSettings }
+
+          const updatePayload: DeviceToDeskthingData = {
+            type: DEVICE_DESKTHING.MANIFEST,
+            app: 'server',
+            payload: combinedManifest
+          }
+          const send = useWebSocketStore.getState().send
+
+          Logger.debug('Sending manifest data because of an update')
+
+          send(updatePayload)
+
+          return {
+            manifest: combinedManifest
+          }
+        })
+      },
       updatePreferences: (newPreferences) =>
         set((state) => {
           if (newPreferences?.currentView?.name != state.preferences?.currentView?.name) {
@@ -48,7 +66,7 @@ export const useSettingsStore = create<SettingsState>()(
               app: 'server',
               payload: {
                 currentApp: newPreferences?.currentView?.name,
-                previousApp: state.preferences?.currentView?.name,
+                previousApp: state.preferences?.currentView?.name
               }
             })
           }
@@ -57,7 +75,6 @@ export const useSettingsStore = create<SettingsState>()(
           }
         }),
       updateCurrentView: (newView) => {
-
         const prevView = get().preferences?.currentView?.name
 
         // Skip if both the prevView is missing and the new name is dashboard
@@ -88,37 +105,36 @@ export const useSettingsStore = create<SettingsState>()(
       }
     }),
     {
-      name: 'thinclient-settings-storage',
+      name: 'liteclient-settings-storage',
       partialize: (state) => ({
         manifest: state.manifest,
         preferences: state.preferences,
         flags: state.flags
       }),
       onRehydrateStorage: () => (state) => {
-
-        let manifestLoaded = false;
+        let manifestLoaded = false
 
         // Primary approach: Listen for the manifestLoaded event
         const handleManifestLoaded = () => {
           if (!manifestLoaded && window.manifest && state) {
-            manifestLoaded = true;
-            console.log('Manifest loaded via event', window.manifest);
-            state.updateManifest(window.manifest);
-            document.removeEventListener('manifestLoaded', handleManifestLoaded);
+            manifestLoaded = true
+            console.log('Manifest loaded via event', window.manifest)
+            state.updateManifest(window.manifest)
+            document.removeEventListener('manifestLoaded', handleManifestLoaded)
           }
-        };
+        }
 
-        document.addEventListener('manifestLoaded', handleManifestLoaded);
+        document.addEventListener('manifestLoaded', handleManifestLoaded)
 
         // Fallback approach: Timeout in case event was already fired or missed
         setTimeout(() => {
           if (!manifestLoaded && window.manifest && state) {
-            manifestLoaded = true;
-            console.log('Manifest loaded via timeout fallback', window.manifest);
-            state.updateManifest(window.manifest);
-            document.removeEventListener('manifestLoaded', handleManifestLoaded);
+            manifestLoaded = true
+            console.log('Manifest loaded via timeout fallback', window.manifest)
+            state.updateManifest(window.manifest)
+            document.removeEventListener('manifestLoaded', handleManifestLoaded)
           }
-        }, 500); // Increased timeout as fallback
+        }, 500) // Increased timeout as fallback
       }
     }
   )

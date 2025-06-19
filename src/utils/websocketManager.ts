@@ -36,6 +36,8 @@ export class WebSocketManager {
   private closeTimeoutId: NodeJS.Timeout | null = null
   private reconnectId: NodeJS.Timeout | null = null
 
+  private messageQueue: DeviceToDeskthingData[] = []
+
   constructor(clientId: string, url?: string) {
     this.clientId = clientId
     this.url = url || this.url
@@ -48,6 +50,31 @@ export class WebSocketManager {
 
   setId(id: string) {
     this.clientId = id
+  }
+
+  private processQueue = (): void => {
+    console.debug('Initializing process queue')
+    if (this.messageQueue.length <= 0) return // cancel processing if there is no queue
+    
+    if (!this.socket) {
+      console.debug('Socket undefined')
+      return // cancel processing if the socket is undefined
+    }
+    
+    if (this.socket.readyState !== WebSocket.OPEN) {
+      console.debug(`Socket ${this.socket.readyState} is not open`)
+      return // cancel processing if the socket is not open
+    }
+
+    const message = this.messageQueue.pop()
+
+    if (!message) this.processQueue()
+
+    console.debug('Processing queue item ', message.type)
+
+    this.sendMessage(message)
+
+    if (this.messageQueue.length > 0) this.processQueue()
   }
 
   async closeExisting() {
@@ -73,9 +100,18 @@ export class WebSocketManager {
   }
 
   async connect(url?: string) {
+
+    // Check if already connected
+
+    if (this.url == url && this.socket.readyState == WebSocket.OPEN) {
+      console.debug(`Socket at location ${this.url} is already open and working.`)
+    }
+
     this.url = url || this.url
 
-    const id = Math.floor(Math.random() * 10000).toString().padStart(4, '0')
+    const id = Math.floor(Math.random() * 10000)
+      .toString()
+      .padStart(4, '0')
 
     if (this.url == undefined || !this.url) {
       console.warn(`[${id}] No WebSocket URL provided`)
@@ -97,14 +133,11 @@ export class WebSocketManager {
         } else {
           resolve()
         }
-      }, 10000)
+      }, 5000)
 
       this.socket!.onopen = () => {
         clearTimeout(timeout)
         console.info(`[${id}] Connected to ${this.url}`)
-        this.reconnecting = false
-        this.startHeartbeat()
-        this.notifyStatusChange('connected')
         resolve()
       }
 
@@ -120,6 +153,7 @@ export class WebSocketManager {
       this.reconnecting = false
       this.startHeartbeat()
       this.notifyStatusChange('connected')
+        this.processQueue() // start processing the queue
     }
 
     this.socket.onclose = (reason) => {
@@ -201,16 +235,24 @@ export class WebSocketManager {
     }, 10000) // Reconnect after 10 seconds
   }
 
-  sendMessage(message: DeviceToDeskthingData) {
+  sendMessage(message: DeviceToDeskthingData, important = true) {
     if (!this.socket) {
       console.error('Socket is not initialized')
       console.debug(`Failed to send ${message.type}`)
+      if (important) {
+        console.debug('Adding to queue for sending later')
+        this.messageQueue.push(message)
+      }
       return
     }
-
+    
     if (this.socket.readyState !== WebSocket.OPEN) {
       console.error('Socket is not open. The state is', this.socket.readyState)
       console.debug(`Failed to send ${message.type}`)
+      if (important) {
+        console.debug('Adding to queue for sending later')
+        this.messageQueue.push(message)
+      }
       return
     }
 

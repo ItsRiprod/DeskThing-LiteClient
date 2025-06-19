@@ -4,6 +4,7 @@ import React, { useEffect } from 'react'
 import { Route, Routes, useNavigate } from 'react-router-dom'
 import ClockPage from '@src/pages/clock'
 import { DashboardPage } from '@src/pages/dashboard'
+import SettingsPage from '@src/pages/settings'
 
 /**
  * A list of system application names that are considered "core" or "system" apps in the application.
@@ -11,7 +12,9 @@ import { DashboardPage } from '@src/pages/dashboard'
  * handling or behavior compared to other "user" applications.
  */
 const SystemApps = [
-  'dashboard'
+  'dashboard',
+  'settings',
+  'landing'
 ]
 
 /**
@@ -44,6 +47,8 @@ const NavRouter: React.FC = () => {
         <Route path={'/app/:app'} element={<AppPage />} />
         <Route path={'/app'} element={<AppPage />} />
         <Route path={'/dashboard'} element={<DashboardPage />} />
+        <Route path={'/settings'} element={<SettingsPage />} />
+        <Route path={'/landing'} element={<DashboardPage />} />
       </Routes>
     </>
   )

@@ -13,7 +13,7 @@ import {
   DEVICE_DESKTHING,
   DeviceToClientCore
 } from '@deskthing/types'
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import Logger from '@src/utils/Logger'
 import { Hint } from '@src/components/Hint'
 import { useUIStore } from '@src/stores/uiStore'
@@ -50,6 +50,31 @@ const WebPage: React.FC<WebPageProps> = ({ currentView }: WebPageProps): JSX.Ele
   const manifest = useSettingsStore((state) => state.manifest)
 
   const setPage = useUIStore((state) => state.setPage)
+
+  // Add state for error handling
+  const [appError, setAppError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  const appExists = apps?.some((app) => app.name === currentView)
+
+  useEffect(() => {
+    if (apps && apps.length > 0 && !appExists) {
+      setAppError(`App "${currentView}" not found`)
+      setIsLoading(false)
+    } else if (appExists) {
+      setAppError(null)
+    }
+  }, [apps, currentView, appExists])
+
+  const handleIframeLoad = () => {
+    setIsLoading(false)
+    setAppError(null)
+  }
+
+  const handleIframeError = () => {
+    setIsLoading(false)
+    setAppError(`Failed to load app "${currentView}". The app may not be running or accessible.`)
+  }
 
   // Handles any music requests from the iframe to the main app
   const handleMusic = () => {
@@ -222,11 +247,27 @@ const WebPage: React.FC<WebPageProps> = ({ currentView }: WebPageProps): JSX.Ele
   }, [ip, port, sendSocket, appSettings, currentView])
 
   const handleGoBack = () => {
-      setPage('dashboard')
+    setPage('dashboard')
+  }
+
+  if (appError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+        <div className="mb-4 text-red-500 text-xl">⚠️</div>
+        <h2 className="text-xl font-semibold mb-2">App Not Available</h2>
+        <p className="text-gray-600 mb-4">{appError}</p>
+        <button
+          onClick={handleGoBack}
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+        >
+          Back to Dashboard
+        </button>
+      </div>
+    )
   }
 
   return (
-    <>
+    <div className="w-full h-full flex items-center justify-center relative">
       <Hint
         flag="firstTimeOpeningApp"
         message="Click the 5th top button (the small one) or the M key (on other devices) to go back to
@@ -237,7 +278,14 @@ const WebPage: React.FC<WebPageProps> = ({ currentView }: WebPageProps): JSX.Ele
         message="Or tap the bottom right to go back"
         position="bottom-right"
       />
-      <iframe
+      {isLoading && apps && apps.length > 0 && (
+        <div className="fixed flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="text-center bg-white dark:bg-neutral-800 p-6 rounded-lg shadow-lg">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
+            <p>Loading {currentView}...</p>
+          </div>
+        </div>
+      )}      <iframe
         ref={iframeRef}
         key={currentView}
         src={`http://${ip}:${port}/app/${currentView}`}
@@ -245,9 +293,14 @@ const WebPage: React.FC<WebPageProps> = ({ currentView }: WebPageProps): JSX.Ele
         title="Web View"
         height="100%"
         width="100%"
+        onLoad={handleIframeLoad}
+        onError={handleIframeError}
       />
-      <button onClick={handleGoBack} className="absolute transition-opacity opacity-0 hover:opacity-100 bottom-0 right-0 bg-neutral-800 border-neutral-500 w-16 h-8 border-t-2 border-l-2 rounded-tl-lg" />
-    </>
+      <button
+        onClick={handleGoBack}
+        className="absolute transition-opacity opacity-0 hover:opacity-100 bottom-0 right-0 bg-neutral-800 border-neutral-500 w-16 h-8 border-t-2 border-l-2 rounded-tl-lg"
+      />
+    </div>
   )
 }
 

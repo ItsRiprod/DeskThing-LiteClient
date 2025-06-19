@@ -56,7 +56,7 @@ export class Logger {
         app: 'server',
         type: DEVICE_DESKTHING.LOG,
         payload: logEntry
-      })
+      }, false)
     } catch (error) {
       console.error('Failed to send log to server:', error)
     }

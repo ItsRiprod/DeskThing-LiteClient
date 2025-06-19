@@ -153,20 +153,20 @@ export const DashboardPage: FC = () => {
       <TopBarComponent />
       {/* Scrollable content */}
       <div
-        className="w-full flex flex-col mt-4"
+        className="w-full flex flex-col"
         style={{
           transform: `translateY(-${scrollY}px)`,
           transition: isDragging ? 'none' : 'transform 0.1s ease-out'
         }}
       >
         {/* Top section */}
-        <div className="w-full flex items-center justify-center transition-all duration-300">
+        <div className="w-full my-5 mt-24 flex items-center justify-center transition-all duration-300">
           <InformationComponent />
         </div>
 
         {/* Apps grid */}
         <div ref={appsContainerRef} className="justify-evenly flex flex-wrap p-8 w-full">
-          {apps ? (
+          {apps.length > 0 ? (
             apps.map((app, index) => (
               <div ref={clampedWheelRotation === index ? selectedAppRef : null} key={index}>
                 <button

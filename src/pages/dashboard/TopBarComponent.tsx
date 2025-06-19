@@ -1,3 +1,5 @@
+import { IconLogoGear } from '@src/assets/Icons'
+import Button from '@src/components/ui/Button'
 import { useTimeStore, useWebSocketStore } from '@src/stores'
 import { useUIStore } from '@src/stores/uiStore'
 
@@ -6,11 +8,15 @@ export const TopBarComponent = () => {
   const isConnected = useWebSocketStore((state) => state.isConnected)
   const isReconnecting = useWebSocketStore((state) => state.isReconnecting)
   const connectionAddress = useWebSocketStore((state) => state.socketManager?.url || 'Unknown')
-  const isScreensaverActive = useUIStore((state) => state.isScreensaverActive)
+  const setView = useUIStore((state) => state.setPage)
+
+  const navigateSettings = () => {
+      setView('settings')
+  }
 
   return (
     <div
-      className="z-40 flex fixed top-0 items-center justify-between px-4 py-2"
+      className="z-40 flex fixed w-full top-0 items-center justify-between px-4 py-2"
       style={{
         backgroundColor: 'rgba(10, 10, 10, 0.5)'
       }}
@@ -37,6 +43,9 @@ export const TopBarComponent = () => {
             <p className="text-sm">Disconnected from server</p>
           </div>
         )}
+        <Button onClick={navigateSettings}>
+          <IconLogoGear />
+        </Button>
       </div>
     </div>
   )

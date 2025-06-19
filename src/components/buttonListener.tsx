@@ -60,7 +60,7 @@ export const ButtonListener = () => {
   useEffect(() => {
     const handleScroll = (event: WheelEvent) => {
       if (event.defaultPrevented) return
-      event.preventDefault()
+      // event.preventDefault()
       const deltaY = event.deltaY
       const deltaX = event.deltaX
 
@@ -74,7 +74,7 @@ export const ButtonListener = () => {
 
     }
 
-    window.addEventListener('wheel', handleScroll, { passive: false })
+    window.addEventListener('wheel', handleScroll, { passive: true })
 
     return () => {
       window.removeEventListener('wheel', handleScroll)
