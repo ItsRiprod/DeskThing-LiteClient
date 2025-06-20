@@ -285,7 +285,12 @@ const WebPage: React.FC<WebPageProps> = ({ currentView }: WebPageProps): JSX.Ele
             <p>Loading {currentView}...</p>
           </div>
         </div>
-      )}      <iframe
+      )}
+      <button
+        onClick={handleGoBack}
+        className="absolute transition-opacity opacity-0 hover:opacity-100 top-0 left-0 bg-neutral-800 border-neutral-500 w-16 h-8 border-b-2 border-r-2 rounded-br-lg"
+      />
+      <iframe
         ref={iframeRef}
         key={currentView}
         src={`http://${ip}:${port}/app/${currentView}`}
