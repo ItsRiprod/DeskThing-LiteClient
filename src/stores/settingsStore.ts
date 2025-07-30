@@ -12,6 +12,7 @@ import useWebSocketStore from './websocketStore'
 import { defaultManifest } from '@src/constants/defaultManifest'
 import { defaultPreferences } from '@src/constants/defaultPreferences'
 import Logger from '@src/utils/Logger'
+import { SystemApps } from '@src/components/nav/Router'
 export interface SettingsState {
   logs: Log[]
   manifest: ClientManifest
@@ -77,8 +78,8 @@ export const useSettingsStore = create<SettingsState>()(
       updateCurrentView: (newView) => {
         const prevView = get().preferences?.currentView?.name
 
-        // Skip if both the prevView is missing and the new name is dashboard
-        if (!(!prevView && newView.name == 'dashboard')) {
+        // Skip if both the prevView is missing OR is a SystemApp and the new app is a system app
+        if ((!prevView || SystemApps.includes(prevView)) && (SystemApps.includes(newView.name))) {
           const send = useWebSocketStore.getState().send
           send({
             app: 'server',

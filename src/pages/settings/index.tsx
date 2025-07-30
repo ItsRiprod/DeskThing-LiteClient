@@ -106,7 +106,7 @@ const SettingsPage = () => {
               </div>
               <div>
                 <p className="text-white/60">Version:</p>
-                <p>{preferences?.version || 'Unknown'}</p>
+                <p>{manifest?.version || 'Unknown'}</p>
               </div>
               <div>
                 <p className="text-white/60">Apps Loaded:</p>
@@ -184,6 +184,12 @@ const SettingsPage = () => {
               className="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white/80 hover:bg-white/5 transition-colors duration-200"
             >
               Save Data
+            </button>
+            <button
+              onClick={() => setPage('developer')}
+              className="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white/80 hover:bg-white/5 transition-colors duration-200"
+            >
+              <span className="hidden xs:block">Go to Developer Settings</span>{' '}
             </button>
           </div>
         </div>
