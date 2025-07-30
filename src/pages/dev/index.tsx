@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef } from "react"
 import { Hint } from "@src/components/Hint"
 import { useUIStore } from "@src/stores/uiStore"
+import { useSettingsStore } from "@src/stores"
 
 export const DeveloperPage = () => {
   const setPage = useUIStore((state) => state.setPage)
+  const ip = useSettingsStore((state) => state.manifest.context.ip)
   const [loading, setLoading] = useState(true)
   const [logs, setLogs] = useState<{ type: string; message: string }[]>([])
   const listeningRef = useRef(true)
@@ -59,10 +61,10 @@ export const DeveloperPage = () => {
       />
       <button
         onClick={handleGoBack}
-        className="absolute transition-opacity opacity-0 hover:opacity-100 top-0 left-0 bg-neutral-800 border-neutral-500 w-16 h-8 border-b-2 border-r-2 rounded-br-lg"
+        className="absolute z-10 transition-opacity opacity-0 hover:opacity-100 top-0 left-0 bg-neutral-800 border-neutral-500 w-16 h-8 border-b-2 border-r-2 rounded-br-lg"
       />
       {loading && (
-        <div className="absolute w-screen h-screen top-0 left-0 flex flex-col items-center justify-center bg-neutral-900 bg-opacity-80 z-50">
+        <div className="absolute w-screen h-screen top-0 left-0 flex flex-col items-center justify-center bg-neutral-900 bg-opacity-80">
           <div className="text-white text-lg mb-2">Loading...</div>
           <div className="w-[90vw] max-h-[60vh] overflow-y-auto bg-neutral-800 rounded p-4 text-sm text-left">
             <div className="font-bold mb-2 text-neutral-300">Logs & Errors:</div>
@@ -86,7 +88,7 @@ export const DeveloperPage = () => {
         </div>
       )}
       <iframe
-        src={`http://localhost:3000/`}
+        src={`http://${ip}:3000/`}
         style={{ width: '100%', height: '100%', border: 'none' }}
         title="Web View"
         height="100%"
@@ -95,7 +97,7 @@ export const DeveloperPage = () => {
       />
       <button
         onClick={handleGoBack}
-        className="absolute transition-opacity opacity-0 hover:opacity-100 bottom-0 right-0 bg-neutral-800 border-neutral-500 w-16 h-8 border-t-2 border-l-2 rounded-tl-lg"
+        className="absolute z-10 transition-opacity opacity-0 hover:opacity-100 bottom-0 right-0 bg-neutral-800 border-neutral-500 w-16 h-8 border-t-2 border-l-2 rounded-tl-lg"
       />
     </div>
   )
