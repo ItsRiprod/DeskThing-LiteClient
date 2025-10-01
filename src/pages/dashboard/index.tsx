@@ -203,7 +203,7 @@ export const DashboardPage: FC = () => {
       </div>
       <Hint
         flag="welcome-card"
-        title="Welcome to ThinThing"
+        title="Welcome to LiteClient"
         message="You'll notice there is nothing here besides apps, this page, and a screensaver. Config should be done from the Server"
         position="center"
       />

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { ClientConfigurations, DEVICE_DESKTHING, ScreensaverSettings } from '@deskthing/types'
 import FullscreenButton from '@src/components/ui/FullscreenButton'
 import {
@@ -10,6 +10,7 @@ import {
 } from '@src/stores'
 import { useUIStore } from '@src/stores/uiStore'
 import { IconLogoGear } from '@src/assets/Icons'
+
 const SettingsPage = () => {
   const updatePreferences = useSettingsStore((state) => state.updatePreferences)
   const setPage = useUIStore((state) => state.setPage)
@@ -65,7 +66,7 @@ const SettingsPage = () => {
   }
 
   return (
-    <div className="w-full max-h-screen h-screen bg-gradient-to-b overflow-y-auto from-zinc-900 to-zinc-950 overflow-hidden flex flex-col select-none">
+    <div className="w-full h-screen bg-gradient-to-b overflow-y-auto from-zinc-900 to-zinc-950 overflow-hidden flex flex-col select-none">
       <div
         className="z-40 flex fixed w-full top-0 items-center justify-between px-4 py-2"
         style={{ backgroundColor: 'rgba(10, 10, 10, 0.5)' }}
@@ -130,48 +131,45 @@ const SettingsPage = () => {
             <h2 className="text-xl font-semibold mb-6 text-white/90">Display Settings</h2>
 
             <div style={{ marginTop: '24px' }}>
-              <div className="flex flex-col">
-                <label className="text-sm text-white/60 mb-2">Screensaver Type</label>
-                <div className="relative">
-                  <button
-                    onClick={() => setOpenDropdown(openDropdown ? null : 'screensaver')}
-                    className="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white/80 hover:bg-white/5 transition-colors duration-200 text-left"
-                  >
-                    {localPreferences?.ScreensaverType?.type || 'Select Screensaver'}
-                  </button>
+              <div className="flex flex-col"></div>
+              <label className="text-sm text-white/60 mb-2">Screensaver Type</label>
+              <div className="relative"></div>
+              <button
+                onClick={() => setOpenDropdown(openDropdown ? null : 'screensaver')}
+                className="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white/80 hover:bg-white/5 transition-colors duration-200 text-left"
+              >
+                {localPreferences?.ScreensaverType?.type || 'Select Screensaver'}
+              </button>
 
-                  {openDropdown === 'screensaver' && (
-                    <div className="absolute top-full left-0 mt-2 w-full bg-zinc-900 border border-white/10 rounded-lg shadow-lg overflow-hidden z-50">
-                      {['clock', 'black', 'logo', 'none'].map((mode) => (
-                        <button
-                          key={mode}
-                          className="block w-full px-4 py-3 text-left text-white/80 hover:bg-white/5 transition-colors duration-200"
-                          onClick={() => {
-                            setScreensaverMode(mode as ScreensaverSettings['type'])
-                            setOpenDropdown(null)
-                          }}
-                        >
-                          {mode.charAt(0).toUpperCase() + mode.slice(1)}
-                        </button>
-                      ))}
-                    </div>
-                  )}
+              {openDropdown === 'screensaver' && (
+                <div className="absolute top-full left-0 mt-2 w-full bg-zinc-900 border border-white/10 rounded-lg shadow-lg overflow-hidden z-50">
+                  {['clock', 'black', 'logo', 'none'].map((mode) => (
+                    <button
+                      key={mode}
+                      className="block w-full px-4 py-3 text-left text-white/80 hover:bg-white/5 transition-colors duration-200"
+                      onClick={() => {
+                        setScreensaverMode(mode as ScreensaverSettings['type'])
+                        setOpenDropdown(null)
+                      }}
+                    >
+                      {mode.charAt(0).toUpperCase() + mode.slice(1)}
+                    </button>
+                  ))}
                 </div>
-              </div>
-
-              <div className="flex flex-col" style={{ marginTop: '24px' }}>
-                <label className="text-sm text-white/60 mb-2">Icon Color</label>
-                <input
-                  type="color"
-                  value={localPreferences?.theme?.icons || '#ffffff'}
-                  onChange={(e) => setIconColor(e.target.value)}
-                  className="w-full h-12 rounded-lg cursor-pointer bg-black/20 border border-white/10"
-                />
-              </div>
+              )}
+            </div>
+            <div className="flex flex-col" style={{ marginTop: '24px' }}>
+              <label className="text-sm text-white/60 mb-2">Icon Color</label>
+              <input
+                type="color"
+                value={localPreferences?.theme?.icons || '#ffffff'}
+                onChange={(e) => setIconColor(e.target.value)}
+                className="w-full h-12 rounded-lg cursor-pointer bg-black/20 border border-white/10"
+              />
             </div>
           </div>
 
-          <div className="bg-neutral-950/50 border border-white/10 rounded-2xl p-6">
+          <div className="bg-neutral-950/50 border border-white/10 rounded-2xl p-6 mb-6">
             <h2 className="text-xl font-semibold mb-6 text-white/90">System</h2>
             <button
               onClick={resyncData}

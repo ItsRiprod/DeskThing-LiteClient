@@ -261,6 +261,20 @@ export class WebSocketManager {
     this.socket.send(JSON.stringify(socketMessage))
   }
 
+  sendBinary(data: ArrayBuffer) {
+    if (!this.socket) {
+      console.error('Socket is not initialized')
+      return
+    }
+
+    if (this.socket.readyState !== WebSocket.OPEN) {
+      console.error('Socket is not open. The state is', this.socket.readyState)
+      return
+    }
+
+    this.socket.send(data)
+  }
+
   addListener(listener: SocketEventListener) {
     this.listeners.push(listener)
     return () => this.removeListener(listener)

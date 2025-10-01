@@ -1,5 +1,8 @@
 export { default as IconLogoLoading } from './Icons/IconLogoLoading'
 export { default as IconLogoGearLoading } from './Icons/IconLogoGearLoading'
 export { default as IconLogoGear } from './Icons/IconLogoGear'
+export { default as IconLogoGearX } from './Icons/IconLogoX'
 export { default as IconLogo } from './Icons/IconLogo'
 export { default as IconLogoName } from './Icons/IconLogoName'
+export { default as IconLogoGearAgent } from './Icons/IconLogoGearAgent'
+export { default as IconReload } from './Icons/IconReload'

@@ -36,7 +36,6 @@ export interface MusicState {
 export const useMusicStore = create<MusicState>((set, get) => ({
   song: null,
   setSong: (newData) => {
-    Logger.info(`Received song ${newData.id}`)
     const currentSong = get().song
 
     // Encoding the url for use by the app

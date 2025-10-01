@@ -19,6 +19,7 @@ export const ButtonListener = () => {
 
     const keyDownHandler = (e: KeyboardEvent) => {
       if (e.defaultPrevented) return
+      buttonStates[e.code] = EventMode.KeyDown
 
       // Ensure that you dont double-call a long press
       if (!longPressTimeouts.has(e.key)) {
@@ -38,6 +39,8 @@ export const ButtonListener = () => {
       if (buttonStates[e.code] !== EventMode.PressLong) {
         handleButton(e.code, EventMode.PressShort) // short press
         buttonStates[e.code] = EventMode.PressShort
+      } else {
+        buttonStates[e.code] = EventMode.KeyUp
       }
 
       // Clear the event timeout to cancel a long press and cleanup

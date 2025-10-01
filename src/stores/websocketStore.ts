@@ -26,6 +26,7 @@ export interface WebSocketState {
   disconnect: () => void
   reconnect: () => void
   send: (message: DeviceToDeskthingData, important?: boolean) => Promise<void>
+  sendBinary: (data: ArrayBuffer) => void
   addListener: (listener: (msg: DeskThingToDeviceCore & { app?: string }) => void) => () => void
   once: (listenData: Partial<DeskThingToDeviceCore>, listener: (msg: DeskThingToDeviceCore & { app?: string }) => void | Promise<void>) => () => void
   removeListener: (listener: (msg: DeskThingToDeviceCore & { app?: string }) => void) => void
@@ -139,6 +140,15 @@ export const useWebSocketStore = create<WebSocketState>((set, get) => {
       const manager = get().socketManager
       if (manager) {
         await manager.sendMessage(message, important)
+      } else {
+        console.error('WebSocket is not connected')
+      }
+    },
+
+    sendBinary: (data: ArrayBuffer) => {
+      const manager = get().socketManager
+      if (manager) {
+        manager.sendBinary(data)
       } else {
         console.error('WebSocket is not connected')
       }

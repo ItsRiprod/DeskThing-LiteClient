@@ -2,11 +2,11 @@
   "name": "Deskthing Lite Client",
   "id": "litething",
   "short_name": "LiteThing",
-  "description": "The Car Thing specific thin DeskThing client for use with DeskThing",
+  "description": "The Car Thing specific lite DeskThing client for use with DeskThing",
   "reactive": false,
   "repository": "https://github.com/ItsRiprod/Deskthing-LiteClient/",
   "author": "Riprod",
-  "version": "0.11.6",
+  "version": "0.11.7",
   "compatibility": {
     "server": ">=0.11.8",
     "app": ">=0.11.0"

@@ -1,11 +1,16 @@
 import { Icon, IconProps } from '.'
 
-function IconLogoGear(props: IconProps): JSX.Element {
+type IconLogoGearProps = IconProps & {
+  close?: boolean
+}
+
+function IconLogoGearX({ close = false, ...props }: IconLogoGearProps): JSX.Element {
   const strokeWidth = props.strokeWidth || 1.5
 
   return (
     <Icon {...props}>
       <svg viewBox="0 0 24 24">
+        {/* Animate between ellipse and X */}
         <g
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
@@ -13,7 +18,30 @@ function IconLogoGear(props: IconProps): JSX.Element {
           strokeWidth=".5"
           transform="translate(12, 12)"
         >
-          <ellipse cx="0" cy="0" rx="5.955381" ry="5.89573" />
+          {/* Circle */}
+          <ellipse
+            cx="0"
+            cy="0"
+            rx="5.955381"
+            ry="5.89573"
+            style={{
+              opacity: close ? 0 : 1,
+              transition: 'opacity 0.3s',
+            }}
+          />
+          {/* X */}
+          <g
+            style={{
+              opacity: close ? 1 : 0,
+              transition: 'opacity 0.3s',
+            }}
+            stroke="#1ed760"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          >
+            <line x1="-4.5" y1="-4.5" x2="4.5" y2="4.5" />
+            <line x1="4.5" y1="-4.5" x2="-4.5" y2="4.5" />
+          </g>
         </g>
 
         <g className="gear_alksdfj" stroke="currentColor" transform="translate(12, 12)">
@@ -30,4 +58,4 @@ function IconLogoGear(props: IconProps): JSX.Element {
   )
 }
 
-export default IconLogoGear
+export default IconLogoGearX

@@ -16,7 +16,7 @@ export const TopBarComponent = () => {
 
   return (
     <div
-      className="z-40 flex fixed w-full top-0 items-center justify-between px-4 py-2"
+      className="z-10 flex fixed w-full top-0 items-center justify-between px-4 py-2"
       style={{
         backgroundColor: 'rgba(10, 10, 10, 0.5)'
       }}
@@ -28,7 +28,7 @@ export const TopBarComponent = () => {
         {isConnected && (
           <div className="flex items-center">
             <div className="h-4 w-4 mr-2 rounded-full bg-green-500" />
-            <p className="text-sm">Connected to {connectionAddress}</p>
+            <p className="text-sm">Connected</p>
           </div>
         )}
         {isReconnecting && (
@@ -40,7 +40,7 @@ export const TopBarComponent = () => {
         {!isConnected && !isReconnecting && (
           <div className="flex items-center">
             <div className="h-4 w-4 mr-2 rounded-full bg-red-500" />
-            <p className="text-sm">Disconnected from server</p>
+            <p className="text-sm">Disconnected</p>
           </div>
         )}
         <Button onClick={navigateSettings}>

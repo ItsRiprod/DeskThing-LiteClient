@@ -1,6 +1,7 @@
 import { useWebSocketStore } from '@src/stores'
 import { useMemo } from 'react'
 import ScreenSaverWrapper from './ScreenSaver/ScreenSaverWrapper'
+import { VoiceComponent } from '@src/overlay/Voice/VoiceComponent'
 
 interface OverlayProps {
   children: React.ReactNode
@@ -27,6 +28,7 @@ const Overlays: React.FC<OverlayProps> = ({ children }) => {
     <div className="flex bg-black flex-col w-screen max-h-screen h-screen items-center justify-end">
       {!isConnected && <ScreenSaverWrapper />}
       <div className={`h-full w-full transition-[padding]`}>{memoChildren}</div>
+      <VoiceComponent />
     </div>
   )
 }

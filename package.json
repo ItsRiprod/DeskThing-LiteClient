@@ -1,6 +1,6 @@
 {
   "name": "deskthing-liteclient",
-  "version": "0.11.6",
+  "version": "0.11.7",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,6 +11,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@deskthing/microphone": "^0.11.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.28.0",
@@ -18,7 +19,6 @@
   },
   "devDependencies": {
     "@deskthing/cli": "file:../DeskThing-CLI",
-    "@deskthing/types": "^0.11.11",
     "@eslint/js": "^9.13.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",

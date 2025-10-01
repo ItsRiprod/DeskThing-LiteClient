@@ -46,6 +46,10 @@ export default {
             opacity: '1',
             transform: 'scale(1)'
           }
+        },
+        'spin': {
+          '0%': { transform: 'rotate(0deg)' },
+          '100%': { transform: 'rotate(-360deg)' }
         }
       },
       animation: {
@@ -54,7 +58,9 @@ export default {
         dropReverse: 'drop 0.5s ease reverse;',
         fade: 'fade 0.5s ease forwards;',
         dropDelay: 'dropdelay 1s ease forwards;',
-        'pop-in': 'pop-in 0.2s ease-out forwards'
+        'pop-in': 'pop-in 0.2s ease-out forwards',
+        'spin': 'spin 2s linear infinite',
+        'spin-slow': 'spin 10s linear infinite'
       }
     }
   },

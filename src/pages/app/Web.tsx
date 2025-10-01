@@ -280,7 +280,7 @@ const WebPage: React.FC<WebPageProps> = ({ currentView }: WebPageProps): JSX.Ele
       />
       {isLoading && apps && apps.length > 0 && (
         <div className="fixed flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="text-center bg-white dark:bg-neutral-800 p-6 rounded-lg shadow-lg">
+          <div className="text-center bg-neutral-800 p-6 rounded-lg shadow-lg">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
             <p>Loading {currentView}...</p>
           </div>

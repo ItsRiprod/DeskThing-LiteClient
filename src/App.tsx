@@ -5,6 +5,7 @@ import { ButtonListener } from './components/ButtonListener'
 import ErrorBoundary from '@src/pages/error/ErrorBoundary'
 import { useEffect } from 'react'
 import { TimeUpdater } from './components/TimeUpdater'
+import { StoreInitializer } from './components/StoreInitializer'
 
 function App() {
   useEffect(() => {
@@ -22,6 +23,7 @@ function App() {
     <HashRouter>
       <ErrorBoundary>
         <ButtonListener />
+        <StoreInitializer />
         <TimeUpdater />
         <Overlays>
           <NavRouter />
