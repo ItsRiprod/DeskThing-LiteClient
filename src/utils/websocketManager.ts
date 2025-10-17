@@ -1,3 +1,4 @@
+import { decodeAppId } from './bufferUtils'
 import Logger from './Logger'
 import {
   DEVICE_DESKTHING,
@@ -9,6 +10,7 @@ import {
 type SocketEventListener = (msg: DeskThingToDeviceCore & { app?: string }) => void
 type ConnectionStatus = 'connected' | 'disconnected' | 'reconnecting'
 type StatusListener = (status: ConnectionStatus) => void
+type BinaryPayload = { data: ArrayBuffer; appId: string }
 
 /**
  * Manages the WebSocket connection and provides methods for sending and receiving messages.
@@ -17,6 +19,7 @@ type StatusListener = (status: ConnectionStatus) => void
 export class WebSocketManager {
   private socket: WebSocket | null = null
   private listeners: SocketEventListener[] = []
+  private binaryListeners: ((data: BinaryPayload) => void)[] = []
   private statusListeners: StatusListener[] = []
   private reconnecting = false
   private _url: string
@@ -55,12 +58,12 @@ export class WebSocketManager {
   private processQueue = (): void => {
     console.debug('Initializing process queue')
     if (this.messageQueue.length <= 0) return // cancel processing if there is no queue
-    
+
     if (!this.socket) {
       console.debug('Socket undefined')
       return // cancel processing if the socket is undefined
     }
-    
+
     if (this.socket.readyState !== WebSocket.OPEN) {
       console.debug(`Socket ${this.socket.readyState} is not open`)
       return // cancel processing if the socket is not open
@@ -153,7 +156,7 @@ export class WebSocketManager {
       this.reconnecting = false
       this.startHeartbeat()
       this.notifyStatusChange('connected')
-        this.processQueue() // start processing the queue
+      this.processQueue() // start processing the queue
     }
 
     this.socket.onclose = (reason) => {
@@ -174,25 +177,45 @@ export class WebSocketManager {
       console.error(`[${id}] WebSocket error:`, error)
     }
 
-    this.socket.onmessage = (event) => {
-      const data = JSON.parse(event.data) as DeskThingToDeviceCore & { app: string }
-      if (data.app == 'client') {
-        if (data.type == DESKTHING_DEVICE.PONG) {
-          if (data.payload) {
-            // Update the clientId with the one from the ping
-            this.setId(data.payload)
+    this.socket.onmessage = async (event) => {
+      try {
+
+        if (typeof event.data === "string") {
+          const data = JSON.parse(event.data) as DeskThingToDeviceCore & { app: string };
+          if (data.app === "client") {
+            if (data.type === DESKTHING_DEVICE.PONG) {
+              if (data.payload) this.setId(data.payload);
+              this.resetPongTimeout();
+            } else if (data.type === DESKTHING_DEVICE.PING) {
+              if (data.payload) this.setId(data.payload);
+              this.sendMessage({ app: "server", type: DEVICE_DESKTHING.PONG });
+            }
           }
-          this.resetPongTimeout()
-        } else if (data.type == DESKTHING_DEVICE.PING) {
-          if (data.payload) {
-            // Update the clientId with the one from the ping
-            this.setId(data.payload)
-          }
-          this.sendMessage({ app: 'server', type: DEVICE_DESKTHING.PONG })
+          this.notifyListeners(data);
+          return;
         }
+
+
+        // Binary path
+        let arrayBuffer: ArrayBuffer;
+        if (event.data instanceof ArrayBuffer) {
+          arrayBuffer = event.data;
+        } else if (event.data instanceof Blob) {
+          arrayBuffer = await event.data.arrayBuffer();
+        } else {
+          console.warn("Unknown message type received:", typeof event.data);
+          return;
+        }
+
+        // decodeAppId returns { appId, data } where data is an ArrayBuffer (transferable)
+        const decodedMessage = decodeAppId(arrayBuffer);
+
+        this.notifyBinaryListeners(decodedMessage.data, decodedMessage.appId);
+
+      } catch (error) {
+
       }
 
-      this.notifyListeners(data)
     }
 
     try {
@@ -245,7 +268,7 @@ export class WebSocketManager {
       }
       return
     }
-    
+
     if (this.socket.readyState !== WebSocket.OPEN) {
       console.error('Socket is not open. The state is', this.socket.readyState)
       console.debug(`Failed to send ${message.type}`)
@@ -280,6 +303,15 @@ export class WebSocketManager {
     return () => this.removeListener(listener)
   }
 
+  addBinaryListener(listener: (data: BinaryPayload) => void) {
+    this.binaryListeners.push(listener)
+    return () => this.removeBinaryListener(listener)
+  }
+
+  removeBinaryListener(listener: (data: BinaryPayload) => void) {
+    this.binaryListeners = this.binaryListeners.filter((l) => l !== listener)
+  }
+
   removeListener(listener: SocketEventListener) {
     this.listeners = this.listeners.filter((l) => l !== listener)
   }
@@ -298,6 +330,10 @@ export class WebSocketManager {
 
   private notifyListeners(data: DeskThingToDeviceCore & { app: string }) {
     this.listeners.forEach((listener) => listener(data))
+  }
+
+  private notifyBinaryListeners(data: ArrayBuffer, appId: string) {
+    this.binaryListeners.forEach((listener) => listener({ data, appId }))
   }
 
   private startHeartbeat() {

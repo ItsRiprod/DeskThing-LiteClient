@@ -17,6 +17,7 @@ import { useRef, useEffect, useState } from 'react'
 import Logger from '@src/utils/Logger'
 import { Hint } from '@src/components/Hint'
 import { useUIStore } from '@src/stores/uiStore'
+import { encodeAppId } from '@src/utils/bufferUtils'
 
 interface WebPageProps {
   currentView: string
@@ -41,7 +42,9 @@ const WebPage: React.FC<WebPageProps> = ({ currentView }: WebPageProps): JSX.Ele
   const music = useMusicStore((state) => state.song)
   const apps = useAppStore((state) => state.apps)
   const addWebsocketListener = useWebSocketStore((state) => state.addListener)
-  const sendSocket = useWebSocketStore((state) => state.send)
+  const addWebsocketBinaryListener = useWebSocketStore((state) => state.addBinaryListener)
+  const sendSocketData = useWebSocketStore((state) => state.send)
+  const sendSocketBinary = useWebSocketStore((state) => state.sendBinary)
   const getActionUrl = useMappingStore((state) => state.getActionUrl)
   const getKeyUrl = useMappingStore((state) => state.getKeyUrl)
   const executeAction = useMappingStore((state) => state.executeAction)
@@ -143,15 +146,28 @@ const WebPage: React.FC<WebPageProps> = ({ currentView }: WebPageProps): JSX.Ele
     }
   }
 
+  const sendBinary = (data: ArrayBuffer) => {
+    if (iframeRef.current && iframeRef.current.contentWindow) {
+      const augmentedData = { type: 'IFRAME_BINARY', payload: data, source: 'deskthing' }
+      iframeRef.current.contentWindow.postMessage(augmentedData, '*', [data])
+    }
+  }
+
   useEffect(() => {
     const removeListener = addWebsocketListener((data) => {
       if (data.app != currentView) return
 
       send(data as unknown as DeviceToClientCore)
     })
+    const removeBinaryListener = addWebsocketBinaryListener((data) => {
+      if (data.appId != currentView) return
+
+      sendBinary(data.data)
+    })
 
     return () => {
       removeListener()
+      removeBinaryListener()
     }
   }, [currentView, addWebsocketListener])
 
@@ -206,36 +222,47 @@ const WebPage: React.FC<WebPageProps> = ({ currentView }: WebPageProps): JSX.Ele
     const handleIframeEvent = (event: MessageEvent) => {
       if (event.origin != `http://${ip}:${port}`) return
 
-      const appDataRequest = event.data.payload as ClientToDeviceData
+      // Check if the type is IFRAME_BINARY or IFRAME_ACTION
+      if (event.data.type === 'IFRAME_BINARY') {
+        // encode the appId into the buffer
+        const buffer = encodeAppId(currentView, event.data.payload as ArrayBuffer)
+        sendSocketBinary(buffer)
+      } else if (event.data.type == 'IFRAME_ACTION') {
+        const appDataRequest = event.data.payload as ClientToDeviceData
 
-      if (appDataRequest.app == 'client') {
-        if (appDataRequest.type === CLIENT_REQUESTS.GET) {
-          if (getRequestHandlers[appDataRequest.request]) {
-            const handler = getRequestHandlers[appDataRequest.request] as (
-              payload: typeof appDataRequest.payload
-            ) => void
-            handler(appDataRequest.payload)
-          } else {
-            Logger.error('Unknown request type: ', appDataRequest.request)
+        // First check if the app target is the client (this) and can be handled locally
+        if (appDataRequest.app == 'client') {
+          if (appDataRequest.type === CLIENT_REQUESTS.GET) {
+            if (getRequestHandlers[appDataRequest.request]) {
+              const handler = getRequestHandlers[appDataRequest.request] as (
+                payload: typeof appDataRequest.payload
+              ) => void
+              handler(appDataRequest.payload)
+            } else {
+              Logger.error('Unknown request type: ', appDataRequest.request)
+            }
+          } else if (appDataRequest.type === 'key') {
+            executeKey(appDataRequest.payload.id, appDataRequest.payload.mode)
+          } else if (appDataRequest.type === 'action') {
+            executeAction({ source: currentView, ...appDataRequest.payload })
+          } else if (appDataRequest.type === 'log') {
+            Logger.log(
+              appDataRequest.request,
+              currentView,
+              appDataRequest.payload.message,
+              ...appDataRequest.payload.data
+            )
           }
-        } else if (appDataRequest.type === 'key') {
-          executeKey(appDataRequest.payload.id, appDataRequest.payload.mode)
-        } else if (appDataRequest.type === 'action') {
-          executeAction({ source: currentView, ...appDataRequest.payload })
-        } else if (appDataRequest.type === 'log') {
-          Logger.log(
-            appDataRequest.request,
-            currentView,
-            appDataRequest.payload.message,
-            ...appDataRequest.payload.data
-          )
+        } else {
+          // Otherwise forward the request to the appropriate app via WebSocket
+          sendSocketData({
+            type: DEVICE_DESKTHING.APP_PAYLOAD,
+            payload: appDataRequest,
+            app: typeof appDataRequest.app == 'string' ? appDataRequest.app : currentView
+          })
         }
       } else {
-        sendSocket({
-          type: DEVICE_DESKTHING.APP_PAYLOAD,
-          payload: appDataRequest,
-          app: typeof appDataRequest.app == 'string' ? appDataRequest.app : currentView
-        })
+        Logger.warn('Received unknown message type from iframe: ', event.data)
       }
     }
 
@@ -244,7 +271,7 @@ const WebPage: React.FC<WebPageProps> = ({ currentView }: WebPageProps): JSX.Ele
     return () => {
       window.removeEventListener('message', handleIframeEvent)
     }
-  }, [ip, port, sendSocket, appSettings, currentView])
+  }, [ip, port, sendSocketData, appSettings, currentView])
 
   const handleGoBack = () => {
     setPage('dashboard')
@@ -295,11 +322,12 @@ const WebPage: React.FC<WebPageProps> = ({ currentView }: WebPageProps): JSX.Ele
         key={currentView}
         src={`http://${ip}:${port}/app/${currentView}`}
         style={{ width: '100%', height: '100%', border: 'none' }}
-        title="Web View"
+        title="DeskThing App"
         height="100%"
         width="100%"
         onLoad={handleIframeLoad}
         onError={handleIframeError}
+        allow="microphone; camera; autoplay; fullscreen"
       />
       <button
         onClick={handleGoBack}

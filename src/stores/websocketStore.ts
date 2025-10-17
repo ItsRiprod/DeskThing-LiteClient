@@ -6,6 +6,8 @@ import { DeviceToDeskthingData, DeskThingToDeviceCore, DESKTHING_DEVICE, SongDat
 import { useClientStore } from './clientStore'
 import { handleServerSocket } from '@src/utils/serverWebsocketHandler'
 
+type BinaryPayload = { data: ArrayBuffer; appId: string }
+
 /**
  * Provides a WebSocket store that manages the connection and communication with a WebSocket server.
  *
@@ -28,6 +30,7 @@ export interface WebSocketState {
   send: (message: DeviceToDeskthingData, important?: boolean) => Promise<void>
   sendBinary: (data: ArrayBuffer) => void
   addListener: (listener: (msg: DeskThingToDeviceCore & { app?: string }) => void) => () => void
+  addBinaryListener: (listener: (data: BinaryPayload) => void) => () => void
   once: (listenData: Partial<DeskThingToDeviceCore>, listener: (msg: DeskThingToDeviceCore & { app?: string }) => void | Promise<void>) => () => void
   removeListener: (listener: (msg: DeskThingToDeviceCore & { app?: string }) => void) => void
 }
@@ -160,6 +163,14 @@ export const useWebSocketStore = create<WebSocketState>((set, get) => {
         manager.addListener(listener)
       }
       return () => manager.removeListener(listener)
+    },
+
+    addBinaryListener: (listener: (data: BinaryPayload) => void): (() => void) => {
+      const manager = get().socketManager
+      if (manager) {
+        manager.addBinaryListener(listener)
+      }
+      return () => manager.removeBinaryListener(listener)
     },
 
     once: (listenData: Partial<DeskThingToDeviceCore>, listener: (msg: DeskThingToDeviceCore & { app?: string }) => void | Promise<void>): (() => void) => {
