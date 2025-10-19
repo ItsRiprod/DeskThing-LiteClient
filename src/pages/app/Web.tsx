@@ -220,7 +220,52 @@ const WebPage: React.FC<WebPageProps> = ({ currentView }: WebPageProps): JSX.Ele
 
   useEffect(() => {
     const handleIframeEvent = (event: MessageEvent) => {
-      if (event.origin != `http://${ip}:${port}`) return
+      if (event.origin !== `http://${ip}:${port}`) {
+        console.warn('Ignored iframe message from unexpected origin:', event.origin)
+        return
+      }
+
+      console.debug('iframe message received', {
+        origin: event.origin,
+        dataType: event.data === null ? 'null' : Object.prototype.toString.call(event.data),
+        data: event.data
+      })
+
+      if (!event.data || typeof event.data.type !== 'string') {
+        console.warn('Unknown message shape from iframe:', event.data)
+        return
+      }
+
+      if (event.data === null) {
+        console.warn('Ignored null message from iframe')
+        return
+      }
+
+      if (event.data instanceof ArrayBuffer) {
+        // raw binary posted directly
+        const buffer = encodeAppId(currentView, event.data)
+        sendSocketBinary(buffer)
+        return
+      }
+
+      if (event.data instanceof Blob) {
+        // blob -> arrayBuffer
+        event.data
+          .arrayBuffer()
+          .then((ab) => {
+            const buffer = encodeAppId(currentView, ab)
+            sendSocketBinary(buffer)
+          })
+          .catch((err) => {
+            console.error('Failed to read Blob message from iframe', err)
+          })
+        return
+      }
+
+      if (typeof event.data !== 'object' || typeof event.data.type !== 'string') {
+        console.warn('Unknown message shape from iframe:', event.data)
+        return
+      }
 
       // Check if the type is IFRAME_BINARY or IFRAME_ACTION
       if (event.data.type === 'IFRAME_BINARY') {

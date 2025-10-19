@@ -1,24 +1,18 @@
 /**
  * Encode an appId and append binary payload.
  * Result layout: [4 bytes BE appIdLength][appId UTF-8 bytes][payload bytes]
- * Accepts Buffer | ArrayBuffer | SharedArrayBuffer and returns an ArrayBuffer (transferable).
+ * Accepts ArrayBuffer | SharedArrayBuffer and returns an ArrayBuffer (transferable).
  */
 export function encodeAppId(
   appId: string,
-  payload: Buffer | ArrayBuffer | SharedArrayBuffer
+  payload: ArrayBuffer | SharedArrayBuffer
 ): ArrayBuffer {
   const encoder = new TextEncoder()
   const appIdBytes = encoder.encode(appId)
   const appIdLen = appIdBytes.length
 
   // Create a view for payload bytes without forcing an extra copy where possible
-  const payloadView = Buffer.isBuffer(payload)
-    ? new Uint8Array(
-        (payload as Buffer).buffer,
-        (payload as Buffer).byteOffset,
-        (payload as Buffer).byteLength
-      )
-    : new Uint8Array(payload as ArrayBuffer)
+  const payloadView = new Uint8Array(payload as ArrayBuffer)
 
   const total = 4 + appIdLen + payloadView.byteLength
   const out = new ArrayBuffer(total)
@@ -34,20 +28,14 @@ export function encodeAppId(
 /**
  * Decode an encoded buffer created by encodeAppId.
  * Returns { appId, data } where data is an ArrayBuffer containing only the payload bytes.
- * Accepts Buffer | ArrayBuffer | SharedArrayBuffer.
+ * Accepts ArrayBuffer | SharedArrayBuffer.
  */
-export function decodeAppId(buffer: Buffer | ArrayBuffer | SharedArrayBuffer): {
+export function decodeAppId(buffer: ArrayBuffer | SharedArrayBuffer): {
   appId: string
   data: ArrayBuffer
 } {
   // Normalize to a Uint8Array view referencing the incoming bytes
-  const view = Buffer.isBuffer(buffer)
-    ? new Uint8Array(
-        (buffer as Buffer).buffer,
-        (buffer as Buffer).byteOffset,
-        (buffer as Buffer).byteLength
-      )
-    : new Uint8Array(buffer as ArrayBuffer)
+  const view = new Uint8Array(buffer)
 
   if (view.byteLength < 4) {
     throw new Error('Buffer too small to contain appId length')

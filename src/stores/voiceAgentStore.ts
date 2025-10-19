@@ -5,6 +5,7 @@ import useWebSocketStore from './websocketStore'
 import { InitializedStore } from '@src/types'
 import { AudioBackendStatus, AudioBackendType, audioManager, MicConfig } from '@deskthing/microphone'
 import { analyzeAudioLevel, stripWavMetadata } from '@src/utils/audio/audioAnalysis'
+import { encodeAppId } from '@src/utils/bufferUtils'
 
 export type VoiceAgentStatus = 'connecting' | 'connected' | 'disconnected' | 'listening' | 'error'
 
@@ -108,7 +109,8 @@ export const useVoiceAgentStore = create<VoiceStoreAgentState>((set, get) => ({
 
     // setup the listener
     audioManager.onAudioPacket((packet) => {
-      useWebSocketStore.getState().sendBinary(packet)
+      const buffer = encodeAppId('server', packet)
+      useWebSocketStore.getState().sendBinary(buffer)
 
       const strippedPacket = stripWavMetadata(packet)
       const audioLevel = analyzeAudioLevel(strippedPacket)
