@@ -1,5 +1,6 @@
 import { IconLogoGear } from '@src/assets/Icons'
 import Button from '@src/components/ui/Button'
+import OpenAgent from '@src/components/ui/OpenAgent'
 import { useTimeStore, useWebSocketStore } from '@src/stores'
 import { useUIStore } from '@src/stores/uiStore'
 
@@ -24,7 +25,7 @@ export const TopBarComponent = () => {
       <div className="flex items-center">
         <p className="font-light">{time}</p>
       </div>
-      <div className="flex items-center">
+      <div className="flex items-center space-x-2">
         {isConnected && (
           <div className="flex items-center">
             <div className="h-4 w-4 mr-2 rounded-full bg-green-500" />
@@ -43,6 +44,7 @@ export const TopBarComponent = () => {
             <p className="text-sm">Disconnected</p>
           </div>
         )}
+        <OpenAgent />
         <Button onClick={navigateSettings}>
           <IconLogoGear />
         </Button>

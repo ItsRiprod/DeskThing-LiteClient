@@ -11,7 +11,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@deskthing/microphone": "^0.11.0",
+    "@deskthing/microphone": "^0.11.2",
     "buffer": "^6.0.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
